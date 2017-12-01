@@ -1,0 +1,13 @@
+# simple chain template: S1->A->B
+# name
+chain
+
+# Components: name type stateful inputs in_back outputs out_back [cpu_coeff] [mem_coeff] [[outgoing_coeff]] [[outgoing_back]]
+# type={source, normal, end}; values separated by tabs; coeff separated by comma - first fw_in, then bw_in, then +constant; outgoing for diff outputs separated by ;
+S1	source	True	0	0	1	0	[0]		[0]		[]	[]
+A	normal	False	1	0	1	0	[1,0]	[1,0]	[[1,0]]	[]
+B	normal	False	1	0	0	0	[1,0]	[1,0]	[]	[]
+
+# Arcs: direction src_name src_output dest_name dest_input max_delay
+forward		S1	0	A	0	20
+forward		A	0	B	0	20

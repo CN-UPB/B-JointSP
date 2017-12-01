@@ -191,11 +191,11 @@ def read_prev_embedding(file, components):
 			if len(row) == 2:
 				try:
 					# get the component with the specified name: first (and only) element with component name
-					component = list(filter(lambda x: x.name == row[0], components))[0]
+					component = list(filter(lambda x: x.name == row[1], components))[0]
 				except IndexError:
 					raise ValueError("Component {} of prev overlay unknown (not used in any template).".format(row[1]))
 
-				prev_embedding[component].append(row[1])
+				prev_embedding[component].append(row[0])
 	return prev_embedding
 
 

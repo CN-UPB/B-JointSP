@@ -17,9 +17,9 @@ obj = objective.COMBINED
 
 # read scenario input
 if len(sys.argv) < 3:
-	print("MIP usage: python3 main.py mip <scenario> (<repetition>)")
-	print("Heuristic usage: python3 main.py heuristic <scenario> (<seed>)")
-	print("Pareto usage: python3 main.py pareto <scenario> <objective> <bound1> <bound2> <bound3>")
+	print("MIP usage: python main.py mip <scenario> (<repetition>)")
+	print("Heuristic usage: python main.py heuristic <scenario> (<seed>)")
+	print("Pareto usage: python main.py pareto <scenario> <objective> <bound1> <bound2> <bound3>")
 	# print("Pareto usage: python3 main.py pareto <scenario> <objective> <bound1> <bound2>")
 	exit(1)
 method = sys.argv[1]
@@ -68,8 +68,8 @@ elif method == "heuristic":
 	# set up logging into file Data/logs/heuristic/scenario_timestamp_seed.log
 	# logging.disable(logging.CRITICAL)		# disable logging
 	timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-	os.makedirs("Data/logs/heuristic/obj{}".format(obj), exist_ok=True)
-	logging.basicConfig(filename="Data/logs/heuristic/obj{}/{}_{}_{}.log".format(obj, os.path.basename(scenario)[:-4], timestamp, seed),
+	os.makedirs("parameters/logs/heuristic/obj{}".format(obj), exist_ok=True)
+	logging.basicConfig(filename="parameters/logs/heuristic/obj{}/{}_{}_{}.log".format(obj, os.path.basename(scenario)[:-4], timestamp, seed),
 						level=logging.DEBUG, format="%(asctime)s(%(levelname)s):\t%(message)s", datefmt="%H:%M:%S")
 
 	logging.info("Starting initial embedding at {}".format(timestamp))
