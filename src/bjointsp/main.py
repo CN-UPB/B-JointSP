@@ -5,11 +5,11 @@ import sys
 import logging
 from datetime import datetime
 import os
-import read_write.reader as reader
-import read_write.writer as writer
-from mip import tep_extended
-from heuristic import control
-import objective
+import bjointsp.read_write.reader as reader
+import bjointsp.read_write.writer as writer
+from bjointsp.mip import tep_extended
+from bjointsp.heuristic import control
+import bjointsp.objective as objective
 
 
 # set objective for MIP and heuristic

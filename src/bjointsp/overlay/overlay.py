@@ -1,8 +1,8 @@
 import copy
 
-from overlay.edge import Edge
-from overlay.flow import Flow
-from overlay.instance import Instance
+from bjointsp.overlay.edge import Edge
+from bjointsp.overlay.flow import Flow
+from bjointsp.overlay.instance import Instance
 
 
 class Overlay:

@@ -1,8 +1,8 @@
 import copy
 import random
 import logging
-from heuristic import control
-from heuristic import heuristic
+from bjointsp.heuristic import control
+from bjointsp.heuristic import heuristic
 
 
 nodes, links, shortest_paths, overlays = None, None, None, None

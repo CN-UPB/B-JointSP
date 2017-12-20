@@ -3,15 +3,15 @@ from collections import defaultdict
 
 from gurobipy import *
 
-import template.adapter as adapter
-from fixed.fixed_instance import FixedInstance
-from fixed.source import Source
-from network.links import Links
-from network.nodes import Nodes
-from overlay.flow import Flow
-from template.arc import Arc
-from template.component import Component
-from template.template import Template
+import bjointsp.template.adapter as adapter
+from bjointsp.fixed.fixed_instance import FixedInstance
+from bjointsp.fixed.source import Source
+from bjointsp.network.links import Links
+from bjointsp.network.nodes import Nodes
+from bjointsp.overlay.flow import Flow
+from bjointsp.template.arc import Arc
+from bjointsp.template.component import Component
+from bjointsp.template.template import Template
 
 
 # convert a string (eg., "[1,2]") into a list of float-coefficients (eg., [1.0,2.0])

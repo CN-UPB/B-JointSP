@@ -1,7 +1,7 @@
 from gurobipy import *
 from datetime import datetime
 from collections import defaultdict
-import objective
+import bjointsp.objective as objective
 
 
 # return name of log-file: logs/scenario_timestamp_bounds.log => unique name if not >1 run per second and scenario

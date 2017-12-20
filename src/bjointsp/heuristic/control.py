@@ -1,12 +1,12 @@
 import math
 import time
 import logging
-import objective
+import bjointsp.objective as objective
 from collections import defaultdict
-from heuristic import heuristic
-from heuristic import improvement
-from heuristic import shortest_paths as sp
-from overlay.instance import Instance
+from bjointsp.heuristic import heuristic
+from bjointsp.heuristic import improvement
+from bjointsp.heuristic import shortest_paths as sp
+from bjointsp.overlay.instance import Instance
 
 
 # global variables for easy access by all functions

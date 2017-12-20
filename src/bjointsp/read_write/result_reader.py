@@ -1,6 +1,6 @@
 # reads heuristic results to be used as starting solution for the MIP
 import csv
-from overlay.instance import Instance
+from bjointsp.overlay.instance import Instance
 
 
 def read_result(file, components, arcs):

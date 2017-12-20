@@ -5,16 +5,17 @@ setup(name='bjointsp',
     license='Apache 2.0',
     description='B-JointSP provides algorithms for joint placement and scaling of bidirectional network services',
     url='https://github.com/CN-UPB/B-JointSP',
+	author='Stefan Schneider',
     author_email='stefan.schneider@upb.de',
-    package_dir={'': 'src'},
-    packages=find_packages('src'),
+	package_dir={'':'src'},
+    packages=find_packages('bjointsp'),
     install_requires=[
         "gurobipy",
     ],
     zip_safe=False,
-    entry_points={
-        'console_scripts': [
-            'bjointsp=main:main',
-        ],
-    },
+    # entry_points={
+        # 'console_scripts': [
+            # 'bjointsp=bjointsp.main:main',
+        # ],
+    # },
 )

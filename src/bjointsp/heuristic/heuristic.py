@@ -3,11 +3,10 @@ import math
 import logging
 import random
 from collections import OrderedDict			# for deterministic behavior
-from overlay.edge import Edge
-from overlay.instance import Instance
-from overlay.overlay import Overlay
-import heuristic.control
-import objective
+from bjointsp.overlay.edge import Edge
+from bjointsp.overlay.instance import Instance
+from bjointsp.overlay.overlay import Overlay
+import bjointsp.objective as objective
 
 # global variables for easy access by all functions
 nodes, links, shortest_paths, overlays = None, None, None, None

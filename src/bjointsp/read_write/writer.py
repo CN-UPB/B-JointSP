@@ -2,8 +2,8 @@ import csv
 from collections import defaultdict
 from datetime import datetime
 from gurobipy import *
-import objective
-from heuristic import shortest_paths as sp
+import bjointsp.objective as objective
+from bjointsp.heuristic import shortest_paths as sp
 
 
 # save variable values globally => allows assigning and writing with nice format in separate functions
