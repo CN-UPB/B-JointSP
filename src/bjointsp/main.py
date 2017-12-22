@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import random
-import sys
 import logging
 from datetime import datetime
 import os
@@ -19,32 +18,8 @@ obj = objective.COMBINED
 # solve with MIP
 def mip(scenario):
 	nodes, links, templates, sources, fixed, prev_embedding, events = reader.read_scenario(scenario)
-
-	# create sparate folders for different repetitions (for running in parallel)
-	if len(sys.argv) >= 4:
-		repetition = int(sys.argv[3])
-		rep_subfolder = True
-		print("Repetition {}".format(repetition))
-	else:
-		repetition = None
-		rep_subfolder = False
-	model = tep_extended.solve(nodes, links, templates, prev_embedding, sources, fixed, scenario, obj, rep=repetition)
-	result = writer.write_mip_result(model, scenario, nodes, links, obj, sources, rep=repetition, rep_subfolder=rep_subfolder)
-	return result
-
-
-# solve with MIP; optimizing one objective and bounding the others
-def pareto(scenario):
-	nodes, links, templates, sources, fixed, prev_embedding, events = reader.read_scenario(scenario)
-
-	# get objective and bounds from arguments
-	obj = objective.get_objective(sys.argv[3])
-	# bounds have to be ordered: over-sub, changed, resources, delay (without the one that's optimized)
-	bounds = (float(sys.argv[4]), float(sys.argv[5]), float(sys.argv[6]))
-	# bounds = (float(sys.argv[4]), float(sys.argv[5]))
-	# run with specified objective and bounds
-	model = tep_extended.solve(nodes, links, templates, prev_embedding, sources, fixed, scenario, obj, bounds)
-	result = writer.write_mip_result(model, scenario, nodes, links, obj, sources, bounds=bounds)
+	model = tep_extended.solve(nodes, links, templates, prev_embedding, sources, fixed, scenario, obj)
+	result = writer.write_mip_result(model, scenario, nodes, links, obj, sources)
 	return result
 
 
@@ -52,13 +27,8 @@ def pareto(scenario):
 def heuristic(scenario, graphml_network=False, cpu=None, mem=None, dr=None):
 	nodes, links, templates, sources, fixed, prev_embedding, events = reader.read_scenario(scenario, graphml_network, cpu, mem, dr)
 
-	# use specified or random seed
-	if len(sys.argv) >= 4:
-		seed = int(sys.argv[3])
-		seed_subfolder = True		# put result in sub-folder of the chosen seed
-	else:
-		seed = random.randint(0, 9999)
-		seed_subfolder = False
+	seed = random.randint(0, 9999)
+	seed_subfolder = False
 	random.seed(seed)
 	print("Using seed {}".format(seed))
 
@@ -87,27 +57,3 @@ def heuristic(scenario, graphml_network=False, cpu=None, mem=None, dr=None):
 		event_no = new_no
 
 	return result
-
-
-def main():
-	if len(sys.argv) < 3:
-		print("MIP usage: python main.py mip <scenario> (<repetition>)")
-		print("Heuristic usage: python main.py heuristic <scenario> (<seed>)")
-		print("Pareto usage: python main.py pareto <scenario> <objective> <bound1> <bound2> <bound3>")
-		# print("Pareto usage: python3 main.py pareto <scenario> <objective> <bound1> <bound2>")
-		exit(1)
-	method = sys.argv[1]
-	scenario = sys.argv[2]
-
-	if method == "mip":
-		mip(scenario)
-	elif method == "pareto":
-		pareto(scenario)
-	elif method == "heuristic":
-		heuristic(scenario)
-	else:
-		print("Invalid solving method: {}. Use 'mip', 'heuristic', or 'pareto'".format(method))
-
-
-if __name__ == "__main__":
-	main()
