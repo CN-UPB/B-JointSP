@@ -2,10 +2,9 @@ import csv
 import os
 from collections import defaultdict
 from datetime import datetime
-#from gurobipy import *
+#from gurobipy import GRB
 import bjointsp.objective as objective
 from bjointsp.heuristic import shortest_paths as sp
-import bjointsp.read_write.model_status as ms
 
 
 # save variable values globally => allows assigning and writing with nice format in separate functions
@@ -367,8 +366,20 @@ def write_mip_result(model, scenario, nodes, links, obj, sources, bounds=None, r
 		writer.writerow(["Bounds: {}".format(bounds)])
 		writer.writerow("")
 
-		status = ms.model_status(model)
-		print(status)
+		# write solution details (if available)
+		try:
+			writer.writerow(("model.status:", model.status))
+			writer.writerow(("Runtime:", model.Runtime))
+			writer.writerow(("Objective value:", round(model.objVal, 3)))
+			writer.writerow(("Gap:", model.MIPGap, 5))
+			writer.writerow("")
+
+			save_mip_variables(model)
+			num_cap_exceeded(nodes, links)
+			write_variables(writer, links, False)
+		except:
+			writer.writerow(("model.status:", model.status))
+
 
 		# # write solution details
 		# if model.status == GRB.status.OPTIMAL:
