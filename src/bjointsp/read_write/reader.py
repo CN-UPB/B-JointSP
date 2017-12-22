@@ -1,6 +1,5 @@
 import csv
 from collections import defaultdict
-from gurobipy import *
 import networkx as nx
 from geopy.distance import vincenty
 import bjointsp.template.adapter as adapter
@@ -12,6 +11,7 @@ from bjointsp.overlay.flow import Flow
 from bjointsp.template.arc import Arc
 from bjointsp.template.component import Component
 from bjointsp.template.template import Template
+import os
 
 
 # convert a string (eg., "[1,2]") into a list of float-coefficients (eg., [1.0,2.0])
@@ -83,7 +83,6 @@ def read_network(file):
 				link_delay[ids] = float(row[3])
 
 	nodes = Nodes(node_ids, node_cpu, node_mem)
-	link_ids = tuplelist(link_ids)
 	links = Links(link_ids, link_dr, link_delay)
 	return nodes, links
 
@@ -125,7 +124,6 @@ def read_graphml_network(file, cpu, mem, dr):
 		link_delay[e_reversed] = link_delay[e]
 
 	nodes = Nodes(node_ids, node_cpu, node_mem)
-	link_ids = tuplelist(link_ids)
 	links = Links(link_ids, link_dr, link_delay)
 	return nodes, links
 

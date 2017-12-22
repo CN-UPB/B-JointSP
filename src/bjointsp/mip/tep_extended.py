@@ -37,6 +37,7 @@ def arcs_between(components, arcs, j1, j2):
 
 
 def solve(nodes, links, templates, prev_embedding, sources, fixed, scenario, obj, bounds=None, rep=None):
+	links = tuplelist(links)		# convert into Gurobi tuplelist to use efficient select with wildcards
 	model = Model("tep_extended")
 
 	if bounds is not None:
