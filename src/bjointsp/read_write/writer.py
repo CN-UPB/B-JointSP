@@ -1,9 +1,11 @@
 import csv
+import os
 from collections import defaultdict
 from datetime import datetime
-from gurobipy import *
+#from gurobipy import *
 import bjointsp.objective as objective
 from bjointsp.heuristic import shortest_paths as sp
+import bjointsp.read_write.model_status as ms
 
 
 # save variable values globally => allows assigning and writing with nice format in separate functions
@@ -365,34 +367,37 @@ def write_mip_result(model, scenario, nodes, links, obj, sources, bounds=None, r
 		writer.writerow(["Bounds: {}".format(bounds)])
 		writer.writerow("")
 
-		# write solution details
-		if model.status == GRB.status.OPTIMAL:
-			# write general information
-			writer.writerow(["Optimal solution found"])				# strings with spaces -> list -> no splitting
-			writer.writerow(("Runtime:", model.Runtime))
-			writer.writerow(("Objective value:", round(model.objVal, 3)))
-			writer.writerow(("Gap:", model.MIPGap))
-			writer.writerow("")
+		status = ms.model_status(model)
+		print(status)
 
-			save_mip_variables(model)
-			num_cap_exceeded(nodes, links)
-			write_variables(writer, links, False)
-
-		elif model.status == GRB.status.INTERRUPTED or model.status == GRB.status.SUBOPTIMAL:
-			# write best solution
-			writer.writerow(["Sub-optimal solution found"])
-			writer.writerow(("model.status:", model.status))
-			writer.writerow(("Runtime:", model.Runtime))
-			writer.writerow(("Objective value:", round(model.objVal, 3)))
-			writer.writerow(("Gap:", model.MIPGap, 5))
-			writer.writerow("")
-
-			save_mip_variables(model)
-			num_cap_exceeded(nodes, links)
-			write_variables(writer, links, False)
-
-		elif model.status == GRB.status.INFEASIBLE:
-			writer.writerow(("model.status:", model.status))
+		# # write solution details
+		# if model.status == GRB.status.OPTIMAL:
+		# 	# write general information
+		# 	writer.writerow(["Optimal solution found"])				# strings with spaces -> list -> no splitting
+		# 	writer.writerow(("Runtime:", model.Runtime))
+		# 	writer.writerow(("Objective value:", round(model.objVal, 3)))
+		# 	writer.writerow(("Gap:", model.MIPGap))
+		# 	writer.writerow("")
+		#
+		# 	save_mip_variables(model)
+		# 	num_cap_exceeded(nodes, links)
+		# 	write_variables(writer, links, False)
+		#
+		# elif model.status == GRB.status.INTERRUPTED or model.status == GRB.status.SUBOPTIMAL:
+		# 	# write best solution
+		# 	writer.writerow(["Sub-optimal solution found"])
+		# 	writer.writerow(("model.status:", model.status))
+		# 	writer.writerow(("Runtime:", model.Runtime))
+		# 	writer.writerow(("Objective value:", round(model.objVal, 3)))
+		# 	writer.writerow(("Gap:", model.MIPGap, 5))
+		# 	writer.writerow("")
+		#
+		# 	save_mip_variables(model)
+		# 	num_cap_exceeded(nodes, links)
+		# 	write_variables(writer, links, False)
+		#
+		# elif model.status == GRB.status.INFEASIBLE:
+		# 	writer.writerow(("model.status:", model.status))
 
 		return result_file
 
