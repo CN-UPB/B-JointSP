@@ -95,15 +95,15 @@ def read_graphml_network(file, cpu, mem, dr):
 	PROPAGATION_FACTOR = 0.77  	# https://en.wikipedia.org/wiki/Propagation_delay
 
 	if not file.endswith(".graphml"):
-		raise ValueError(f"{file} is not a GraphML file")
+		raise ValueError("{} is not a GraphML file".format(file))
 	network = nx.read_graphml(file, node_type=int)
 	# set nodes (uniform capacities as specified)
-	node_ids = [f"pop{n}" for n in network.nodes]		# add "pop" to node index (eg, 1 --> pop1)
-	node_cpu = {f"pop{n}": cpu for n in network.nodes}
-	node_mem = {f"pop{n}": mem for n in network.nodes}
+	node_ids = ["pop{}".format(n) for n in network.nodes]		# add "pop" to node index (eg, 1 --> pop1)
+	node_cpu = {"pop{}".format(n): cpu for n in network.nodes}
+	node_mem = {"pop{}".format(n): mem for n in network.nodes}
 
-	link_ids = [(f"pop{e[0]}", f"pop{e[1]}") for e in network.edges]
-	link_dr = {(f"pop{e[0]}", f"pop{e[1]}"): dr for e in network.edges}
+	link_ids = [("pop{}".format(e[0]), "pop{}".format(e[1])) for e in network.edges]
+	link_dr = {("pop{}".format(e[0]), "pop{}".format(e[1])): dr for e in network.edges}
 
 	# calculate link delay based on geo positions of nodes; duplicate links for bidirectionality
 	link_delay = {}
@@ -114,11 +114,11 @@ def read_graphml_network(file, cpu, mem, dr):
 		n2_lat, n2_long = n2.get("Latitude"), n2.get("Longitude")
 		distance = vincenty((n1_lat, n1_long), (n2_lat, n2_long)).meters		# in meters
 		delay = (distance / SPEED_OF_LIGHT * 1000) * PROPAGATION_FACTOR  		# in milliseconds
-		link_delay[(f"pop{e[0]}", f"pop{e[1]}")] = round(delay)
+		link_delay[("pop{}".format(e[0]), "pop{}".format(e[1]))] = round(delay)
 
 	# add reversed links for bidirectionality
 	for e in network.edges:
-		e = (f"pop{e[0]}",f"pop{e[1]}")
+		e = ("pop{}".format(e[0]),"pop{}".format(e[1]))
 		e_reversed = (e[1], e[0])
 		link_ids.append(e_reversed)
 		link_dr[e_reversed] = link_dr[e]
