@@ -340,7 +340,6 @@ def write_mip_result(model, scenario, nodes, links, obj, sources, bounds=None, r
 		bounds_str = "_({},{})".format(bounds[0], bounds[1])
 	result_file = create_result_file(scenario, "mip", obj=obj, bounds=bounds_str, seed=rep, seed_subfolder=rep_subfolder)
 
-
 	with open(result_file, "w", newline="") as csvfile:
 		writer = csv.writer(csvfile, delimiter="\t")
 		print("Writing solution to {}".format(result_file))
@@ -394,6 +393,8 @@ def write_mip_result(model, scenario, nodes, links, obj, sources, bounds=None, r
 
 		elif model.status == GRB.status.INFEASIBLE:
 			writer.writerow(("model.status:", model.status))
+
+		return result_file
 
 
 def save_heuristic_variables(changed_instances, instances, edges, nodes, links):
@@ -507,3 +508,5 @@ def write_heuristic_result(init_time, runtime, obj_value, changed, overlays, sce
 			edges.update(ol.edges)
 		save_heuristic_variables(changed, instances, edges, nodes, links)
 		write_variables(writer, links, True)
+
+	return result_file

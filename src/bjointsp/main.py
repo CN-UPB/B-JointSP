@@ -29,7 +29,8 @@ def mip(scenario):
 		repetition = None
 		rep_subfolder = False
 	model = tep_extended.solve(nodes, links, templates, prev_embedding, sources, fixed, scenario, obj, rep=repetition)
-	writer.write_mip_result(model, scenario, nodes, links, obj, sources, rep=repetition, rep_subfolder=rep_subfolder)
+	result = writer.write_mip_result(model, scenario, nodes, links, obj, sources, rep=repetition, rep_subfolder=rep_subfolder)
+	return result
 
 
 # solve with MIP; optimizing one objective and bounding the others
@@ -43,7 +44,8 @@ def pareto(scenario):
 	# bounds = (float(sys.argv[4]), float(sys.argv[5]))
 	# run with specified objective and bounds
 	model = tep_extended.solve(nodes, links, templates, prev_embedding, sources, fixed, scenario, obj, bounds)
-	writer.write_mip_result(model, scenario, nodes, links, obj, sources, bounds=bounds)
+	result = writer.write_mip_result(model, scenario, nodes, links, obj, sources, bounds=bounds)
+	return result
 
 
 # solve with heuristic
@@ -70,7 +72,7 @@ def heuristic(scenario):
 	logging.info("Starting initial embedding at {}".format(timestamp))
 	print("Initial embedding\n")
 	init_time, runtime, obj_value, changed, overlays = control.solve(nodes, links, templates, {}, sources, fixed, obj)
-	writer.write_heuristic_result(init_time, runtime, obj_value, changed, overlays.values(), scenario, obj, -1, "Initial embedding", nodes, links, seed, seed_subfolder, sources)
+	result = writer.write_heuristic_result(init_time, runtime, obj_value, changed, overlays.values(), scenario, obj, -1, "Initial embedding", nodes, links, seed, seed_subfolder, sources)
 
 	# if events exists, update input accordingly and solve again for each event until last event is reached
 	event_no = 0
@@ -81,8 +83,10 @@ def heuristic(scenario):
 
 		new_no, event, templates, sources, fixed = reader.read_event(events, event_no, templates, sources, fixed)
 		init_time, runtime, obj_value, changed, overlays = control.solve(nodes, links, templates, overlays, sources, fixed, obj)
-		writer.write_heuristic_result(init_time, runtime, obj_value, changed, overlays.values(), scenario, obj, event_no, event, nodes, links, seed, seed_subfolder, sources)
+		result = writer.write_heuristic_result(init_time, runtime, obj_value, changed, overlays.values(), scenario, obj, event_no, event, nodes, links, seed, seed_subfolder, sources)
 		event_no = new_no
+
+	return result
 
 
 def main():
