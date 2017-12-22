@@ -1,8 +1,8 @@
 import csv
 from collections import defaultdict
-
 from gurobipy import *
-
+import networkx as nx
+from geopy.distance import vincenty
 import bjointsp.template.adapter as adapter
 from bjointsp.fixed.fixed_instance import FixedInstance
 from bjointsp.fixed.source import Source
@@ -81,6 +81,48 @@ def read_network(file):
 				link_ids.append(ids)
 				link_dr[ids] = float(row[2])
 				link_delay[ids] = float(row[3])
+
+	nodes = Nodes(node_ids, node_cpu, node_mem)
+	link_ids = tuplelist(link_ids)
+	links = Links(link_ids, link_dr, link_delay)
+	return nodes, links
+
+
+# read substrate network from csv-file, set specified node and link capacities
+# IMPORTANT: for consistency with emulator, all node IDs are prefixed with "pop" and have to be referenced as such (eg, in source locations)
+def read_graphml_network(file, cpu, mem, dr):
+	SPEED_OF_LIGHT = 299792458  # meter per second
+	PROPAGATION_FACTOR = 0.77  	# https://en.wikipedia.org/wiki/Propagation_delay
+
+	if not file.endswith(".graphml"):
+		raise ValueError(f"{file} is not a GraphML file")
+	network = nx.read_graphml(file, node_type=int)
+	# set nodes (uniform capacities as specified)
+	node_ids = [f"pop{n}" for n in network.nodes]		# add "pop" to node index (eg, 1 --> pop1)
+	node_cpu = {f"pop{n}": cpu for n in network.nodes}
+	node_mem = {f"pop{n}": mem for n in network.nodes}
+
+	link_ids = [(f"pop{e[0]}", f"pop{e[1]}") for e in network.edges]
+	link_dr = {(f"pop{e[0]}", f"pop{e[1]}"): dr for e in network.edges}
+
+	# calculate link delay based on geo positions of nodes; duplicate links for bidirectionality
+	link_delay = {}
+	for e in network.edges:
+		n1 = network.nodes(data=True)[e[0]]
+		n2 = network.nodes(data=True)[e[1]]
+		n1_lat, n1_long = n1.get("Latitude"), n1.get("Longitude")
+		n2_lat, n2_long = n2.get("Latitude"), n2.get("Longitude")
+		distance = vincenty((n1_lat, n1_long), (n2_lat, n2_long)).meters		# in meters
+		delay = (distance / SPEED_OF_LIGHT * 1000) * PROPAGATION_FACTOR  		# in milliseconds
+		link_delay[(f"pop{e[0]}", f"pop{e[1]}")] = round(delay)
+
+	# add reversed links for bidirectionality
+	for e in network.edges:
+		e = (f"pop{e[0]}",f"pop{e[1]}")
+		e_reversed = (e[1], e[0])
+		link_ids.append(e_reversed)
+		link_dr[e_reversed] = link_dr[e]
+		link_delay[e_reversed] = link_delay[e]
 
 	nodes = Nodes(node_ids, node_cpu, node_mem)
 	link_ids = tuplelist(link_ids)
@@ -254,7 +296,7 @@ def read_event(file, event_no, templates, sources, fixed):
 
 # read scenario with all inputs for a problem instance (inputs must be listed and read in the specified order)
 # substrate network, templates, previous overlay, sources, fixed instances
-def read_scenario(file):
+def read_scenario(file, graphml_network=False, cpu=None, mem=None, dr=None):
 	# initialize inputs as empty (except network, this is always required)
 	templates, sources, fixed_instances = [], [], []
 	prev_embedding = defaultdict(list)
@@ -270,7 +312,10 @@ def read_scenario(file):
 			if len(row) > 1:									# only consider rows with 1+ file name(s)
 				if row[0] == "network:":
 					path = os.path.join(directory, row[1])		# look in the same directory as the scenario file
-					network = read_network(path)
+					if graphml_network:
+						network = read_graphml_network(path, cpu, mem, dr)
+					else:
+						network = read_network(path)
 					nodes = network[0]
 					links = network[1]
 

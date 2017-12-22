@@ -49,8 +49,8 @@ def pareto(scenario):
 
 
 # solve with heuristic
-def heuristic(scenario):
-	nodes, links, templates, sources, fixed, prev_embedding, events = reader.read_scenario(scenario)
+def heuristic(scenario, graphml_network=False, cpu=None, mem=None, dr=None):
+	nodes, links, templates, sources, fixed, prev_embedding, events = reader.read_scenario(scenario, graphml_network, cpu, mem, dr)
 
 	# use specified or random seed
 	if len(sys.argv) >= 4:
