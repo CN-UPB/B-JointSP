@@ -10,7 +10,7 @@ setup(name='bjointsp',
 	package_dir={'':'src'},
 	packages=find_packages('bjointsp'),
 	install_requires=[
-		"gurobipy",
+		#"gurobipy",
 		"networkx",
 		"geopy",
 	],
