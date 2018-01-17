@@ -6,21 +6,12 @@ from datetime import datetime
 import os
 import bjointsp.read_write.reader as reader
 import bjointsp.read_write.writer as writer
-from bjointsp.mip import tep_extended
 from bjointsp.heuristic import control
 import bjointsp.objective as objective
 
 
 # set objective for MIP and heuristic
 obj = objective.COMBINED
-
-
-# solve with MIP
-def mip(scenario):
-	nodes, links, templates, sources, fixed, prev_embedding, events = reader.read_scenario(scenario)
-	model = tep_extended.solve(nodes, links, templates, prev_embedding, sources, fixed, scenario, obj)
-	result = writer.write_mip_result(model, scenario, nodes, links, obj, sources)
-	return result
 
 
 # solve with heuristic
@@ -57,3 +48,6 @@ def heuristic(scenario, graphml_network=False, cpu=None, mem=None, dr=None):
 		event_no = new_no
 
 	return result
+
+
+# TODO: execute heuristic as main; and parse inputs as arguments not as scenario.csv

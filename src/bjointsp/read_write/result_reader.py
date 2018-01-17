@@ -1,4 +1,4 @@
-# reads heuristic results to be used as starting solution for the MIP
+# reads heuristic results to be used as starting solution
 import csv
 from bjointsp.overlay.instance import Instance
 
