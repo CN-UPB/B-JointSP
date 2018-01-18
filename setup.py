@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='bjointsp',
-	version='1.1.0',
+	version='2.0.0',
 	license='Apache 2.0',
 	description='B-JointSP provides algorithms for joint placement and scaling of bidirectional network services',
 	url='https://github.com/CN-UPB/B-JointSP',
@@ -14,9 +14,9 @@ setup(name='bjointsp',
 		"geopy",
 	],
 	zip_safe=False,
-	# entry_points={
-		# 'console_scripts': [
-			# 'bjointsp=bjointsp.main:main',
-		# ],
-	# },
+	entry_points={
+		'console_scripts': [
+			'bjointsp=bjointsp.main:main',
+		],
+	},
 )

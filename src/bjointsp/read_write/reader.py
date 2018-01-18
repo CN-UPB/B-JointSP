@@ -128,8 +128,8 @@ def read_graphml_network(file, cpu, mem, dr):
 	return nodes, links
 
 
-# read template from csv-file
-def read_template(file):
+# read template from csv-file, optionally return the source components too
+def read_template(file, return_src_components=False):
 	components, arcs = [], []
 	with open(file, "r") as template_file:
 		reader = csv.reader((row for row in template_file if not row.startswith("#")), delimiter="\t")
@@ -164,6 +164,11 @@ def read_template(file):
 
 	template = Template(name, components, arcs)
 	update_stateful(template)
+
+	if return_src_components:
+		source_components = {j for j in components if j.source}
+		return template, source_components
+
 	return template
 
 

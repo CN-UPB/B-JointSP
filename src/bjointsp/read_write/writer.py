@@ -169,7 +169,7 @@ def write_variables(writer, links, heuristic):
 
 # prepare result-file based on scenario-file: in results-subdirectory, using scenario name + timestamp (+ seed + event)
 # heuristic results also add the seed and event number; MIP results can add repetition instead
-def create_result_file(scenario, subfolder, event="", seed=None, seed_subfolder=False, obj=None, bounds=""):
+def create_result_file(network_file, subfolder, event="", seed=None, seed_subfolder=False, obj=None, bounds=""):
 	# create subfolder for current objective
 	obj_folder = ""
 	if obj is not None:
@@ -184,8 +184,8 @@ def create_result_file(scenario, subfolder, event="", seed=None, seed_subfolder=
 		elif obj == objective.DELAY:
 			obj_folder = "/delay"
 
-	input_file = os.path.basename(scenario)
-	input_directory = os.path.dirname(scenario)
+	input_file = os.path.basename(network_file)
+	input_directory = os.path.dirname(network_file)
 	# put result in seed-subfolder
 	if seed is not None and seed_subfolder:
 		result_directory = os.path.join(input_directory, "../results/" + subfolder + obj_folder + "/{}".format(seed))
@@ -196,9 +196,9 @@ def create_result_file(scenario, subfolder, event="", seed=None, seed_subfolder=
 		seed = ""
 	else:
 		seed = "_{}".format(seed)
-	split_file = input_file.split(".")
+	file_name = input_file.split(".")[0]
 	timestamp = datetime.now().strftime("_%Y-%m-%d_%H-%M-%S")
-	result_file = split_file[0] + timestamp + bounds + seed + event + "." + split_file[1]
+	result_file = file_name + timestamp + bounds + seed + event + ".csv"
 	result_path = os.path.join(result_directory, result_file)
 
 	os.makedirs(os.path.dirname(result_path), exist_ok=True)  # create subdirectories if necessary
@@ -206,15 +206,15 @@ def create_result_file(scenario, subfolder, event="", seed=None, seed_subfolder=
 	return result_path
 
 
-# write input-scenario into
-def write_scenario(writer, scenario, sources):
-	writer.writerow(["Input: {}".format(scenario)])
+# write input into result
+def write_inputs(writer, input_files, sources):
+	writer.writerow(["Input: {}".format(input_files)])
 	# copy scenario file into result file, ignoring comments and empty lines
-	with open(scenario, "r") as scenario_file:
-		reader = csv.reader((row for row in scenario_file if not row.startswith("#")), delimiter=" ")
-		for row in reader:
-			if len(row) > 0:
-				writer.writerow(row)
+	# with open(scenario, "r") as scenario_file:
+	# 	reader = csv.reader((row for row in scenario_file if not row.startswith("#")), delimiter=" ")
+	# 	for row in reader:
+	# 		if len(row) > 0:
+	# 			writer.writerow(row)
 
 	# write info about sources: #flows, #sources, total source dr
 	writer.writerow(["flow_number: {}".format(sum(len(src.flows) for src in sources))])
@@ -318,15 +318,15 @@ def save_heuristic_variables(changed_instances, instances, edges, nodes, links):
 			flow_dr[(f.id, str(e))] = dr			# flow, edge: dr
 
 
-def write_heuristic_result(init_time, runtime, obj_value, changed, overlays, scenario, obj, event_no, event, nodes, links, seed, seed_subfolder, sources):
+def write_heuristic_result(init_time, runtime, obj_value, changed, overlays, input_files, obj, event_no, event, nodes, links, seed, seed_subfolder, sources):
 	reset_global()
 
 	# initial embedding
 	if event_no == -1:
-		result_file = create_result_file(scenario, "heuristic", seed=seed, seed_subfolder=seed_subfolder, obj=obj)
+		result_file = create_result_file(input_files[0], "heuristic", seed=seed, seed_subfolder=seed_subfolder, obj=obj)
 	# updated embedding after event
 	else:
-		result_file = create_result_file(scenario, "heuristic", event="_event{}".format(event_no), seed=seed, seed_subfolder=seed_subfolder, obj=obj)
+		result_file = create_result_file(input_files[0], "heuristic", event="_event{}".format(event_no), seed=seed, seed_subfolder=seed_subfolder, obj=obj)
 
 	with open(result_file, "w", newline="") as csvfile:
 		writer = csv.writer(csvfile, delimiter="\t")
@@ -335,7 +335,7 @@ def write_heuristic_result(init_time, runtime, obj_value, changed, overlays, sce
 		# write input information
 		writer.writerow(["End time: " + datetime.now().strftime("%Y-%m-%d %H:%M:%S")])
 		writer.writerow(["Seed: {}".format(seed)])
-		write_scenario(writer, scenario, sources)
+		write_inputs(writer, input_files, sources)
 		writer.writerow(["Model: Heuristic"])
 		if obj == objective.COMBINED:
 			writer.writerow(["Objective: COMBINED"])
