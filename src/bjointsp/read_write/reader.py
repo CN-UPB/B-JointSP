@@ -152,10 +152,10 @@ def read_template(file, return_src_components=False):
 				cpu = coeff_list(row[7])
 				mem = coeff_list(row[8])
 				outgoing = (coeff_lists(row[9]), coeff_lists(row[10]))
-				image = None
+				config = None
 				if len(row) == 12:
-					image = row[11]
-				component = Component(row[0], row[1].strip(), stateful, inputs, outputs, cpu, mem, outgoing, image)
+					config = row[11]
+				component = Component(row[0], row[1].strip(), stateful, inputs, outputs, cpu, mem, outgoing, config)
 				components.append(component)
 
 			# arcs: direction, src_name, src_output, dest_name, dest_input, max_delay

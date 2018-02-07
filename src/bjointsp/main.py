@@ -59,7 +59,8 @@ def heuristic(network_file, template_file, source_file, graphml_network=False, c
 	# 	result = writer.write_heuristic_result(init_time, runtime, obj_value, changed, overlays.values(), scenario, obj, event_no, event, nodes, links, seed, seed_subfolder, sources)
 	# 	event_no = new_no
 
-	return result
+	# TODO: wrap result into a result class with all inputs and outputs?
+	return result, overlays, templates
 
 
 def parse_args():

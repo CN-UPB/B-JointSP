@@ -1,5 +1,5 @@
 class Component:
-	def __init__(self, name, type, stateful, inputs, outputs, cpu, mem, dr, vnf_image=None):
+	def __init__(self, name, type, stateful, inputs, outputs, cpu, mem, dr, config=None):
 		self.name = name
 		if type == "source":
 			self.source = True
@@ -21,7 +21,7 @@ class Component:
 		self.mem = mem
 		self.dr = dr[0]
 		self.dr_back = dr[1]
-		self.vnf_image = vnf_image
+		self.config = config		# config used by external apps/MANOs (describes image, ports, ...)
 
 		total_inputs = self.inputs + self.inputs_back
 		if len(self.cpu) != total_inputs + 1: # always need idle consumption (can be 0)
