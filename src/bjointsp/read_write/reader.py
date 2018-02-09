@@ -113,8 +113,7 @@ def read_graphml_network(file, cpu, mem, dr):
 		n2_lat, n2_long = n2.get("Latitude"), n2.get("Longitude")
 		distance = vincenty((n1_lat, n1_long), (n2_lat, n2_long)).meters		# in meters
 		delay = (distance / SPEED_OF_LIGHT * 1000) * PROPAGATION_FACTOR  		# in milliseconds
-		print("{} to {}: {}ms (place)".format(e[0], e[1], round(delay, 2)))
-		link_delay[("pop{}".format(e[0]), "pop{}".format(e[1]))] = round(delay, 2)
+		link_delay[("pop{}".format(e[0]), "pop{}".format(e[1]))] = round(delay)
 
 	# add reversed links for bidirectionality
 	for e in network.edges:

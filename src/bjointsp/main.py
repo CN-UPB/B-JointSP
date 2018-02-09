@@ -44,6 +44,7 @@ def heuristic(network_file, template_file, source_file, graphml_network=False, c
 
 	logging.info("Starting initial embedding at {}".format(timestamp))
 	print("Initial embedding\n")
+	# TODO: make less verbose or only as verbose when asked for (eg, with -v argument)
 	init_time, runtime, obj_value, changed, overlays = control.solve(nodes, links, templates, {}, sources, fixed, obj)
 	result = writer.write_heuristic_result(init_time, runtime, obj_value, changed, overlays.values(), input_files, obj, -1, "Initial embedding", nodes, links, seed, seed_subfolder, sources)
 
