@@ -1,6 +1,7 @@
 import csv
 from collections import defaultdict
 import networkx as nx
+import yaml
 from geopy.distance import vincenty
 import bjointsp.template.adapter as adapter
 from bjointsp.fixed.fixed_instance import FixedInstance
@@ -132,6 +133,59 @@ def read_graphml_network(file, cpu, mem, dr):
 def read_template(file, return_src_components=False):
 	components, arcs = [], []
 	with open(file, "r") as template_file:
+		reader = csv.reader((row for row in template_file if not row.startswith("#")), delimiter="\t")
+		for row in reader:
+			row = remove_empty_values(row)  # deal with multiple tabs in a row leading to empty values
+
+			# template name
+			if len(row) == 1:
+				name = row[0]
+
+			# components: name, type, stateful, inputs, in_back, outputs, out_back, [cpu_coeff], [mem_coeff],
+			# [[outgoing_coeff]], [[outgoing_back]], opt:vnf_image
+			if len(row) >= 11:
+				if row[1].strip() == "source":
+					stateful = True		# source instances always considered stateful
+				else:
+					stateful = row[2].strip() == "True"
+				inputs = (int(row[3]), int(row[4]))
+				outputs = (int(row[5]), int(row[6]))
+				cpu = coeff_list(row[7])
+				mem = coeff_list(row[8])
+				outgoing = (coeff_lists(row[9]), coeff_lists(row[10]))
+				config = None
+				if len(row) == 12:
+					config = row[11]
+				component = Component(row[0], row[1].strip(), stateful, inputs, outputs, cpu, mem, outgoing, config)
+				components.append(component)
+
+			# arcs: direction, src_name, src_output, dest_name, dest_input, max_delay
+			if len(row) == 6:
+				source = list(filter(lambda x: x.name == row[1].strip(), components))[0]  # get component with specified name
+				dest = list(filter(lambda x: x.name == row[3].strip(), components))[0]
+				arc = Arc(row[0].strip(), source, int(row[2]), dest, int(row[4]), float(row[5]))
+				arcs.append(arc)
+
+	template = Template(name, components, arcs)
+	update_stateful(template)
+
+	if return_src_components:
+		source_components = {j for j in components if j.source}
+		return template, source_components
+
+	return template
+
+
+# read template from yaml file
+def read_yaml_template(file, return_src_components=False):
+	components, arcs = [], []
+	with open(file, "r") as template_file:
+		template = yaml.load(template_file)
+		for vnf in template["vnfs"]:
+			component = Component(vnf["name"], )
+		# TODO: continue here; explicitly set all values in yaml!
+
+		# copied from below
 		reader = csv.reader((row for row in template_file if not row.startswith("#")), delimiter="\t")
 		for row in reader:
 			row = remove_empty_values(row)  # deal with multiple tabs in a row leading to empty values

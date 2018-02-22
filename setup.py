@@ -12,6 +12,7 @@ setup(name='bjointsp',
 	install_requires=[
 		"networkx",
 		"geopy",
+		"pyyaml",
 	],
 	zip_safe=False,
 	entry_points={

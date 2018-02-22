@@ -5,6 +5,7 @@ import logging
 import argparse
 from datetime import datetime
 import os
+import yaml
 import bjointsp.read_write.reader as reader
 import bjointsp.read_write.writer as writer
 from bjointsp.heuristic import control
@@ -13,6 +14,13 @@ import bjointsp.objective as objective
 
 # set objective for MIP and heuristic
 obj = objective.COMBINED
+
+
+# interface to place-emu: triggers placement
+# network: NetworkX graph, service: YAML file, sources: YAML file
+def place(network, service, sources):
+	service = yaml.load(service)
+	print(service["name"])
 
 
 # solve with heuristic
@@ -73,9 +81,11 @@ def parse_args():
 
 
 def main():
-	args = parse_args()
-	# TODO: allow to set cpu, mem, dr as args; or take them from graphml
-	heuristic(args.network, args.template, args.sources, graphml_network=True, cpu=10, mem=10, dr=50)
+	# args = parse_args()
+	# # TODO: allow to set cpu, mem, dr as args; or take them from graphml
+	# heuristic(args.network, args.template, args.sources, graphml_network=True, cpu=10, mem=10, dr=50)
+	with open("parameters/templates/fw1chain.yaml", "r") as service:
+		place(None, service, None)
 
 
 if __name__ == '__main__':

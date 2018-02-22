@@ -1,0 +1,47 @@
+name: fw1chain
+vnfs:
+  - name: vnf_user
+    type: source
+    stateful: True
+    inputs: 0
+    in_back: 0
+    outputs: 1
+    out_back: 0
+    cpu_coeff: [0]
+    mem_coeff: [0]
+    vnf_image: '{"image":"placement-user-img", "network":"(id=output,ip=10.0.0.1/24)"}'
+  - name: vnf_fw1
+    type: normal
+    stateful: False
+    inputs: 1
+    in_back: 0
+    outputs: 1
+    out_back: 0
+    cpu_coeff: [1,0]
+    mem_coeff: [1,0]
+    outgoing_coeff:
+      - [1,0]
+    vnf_image: '{"image":"placement-fw1-img", "network":"(id=input,ip=88.0.0.2/24),(id=output,ip=99.0.0.1/24)"}'
+  - name: vnf_web
+    type: normal
+    stateful: False
+    inputs: 1
+    in_back: 0
+    outputs: 0
+    out_back: 0
+    cpu_coeff: [1,0]
+    mem_coeff: [1,0]
+    vnf_image: '{"image":"placement-apache-img", "network":"(id=input,ip=99.0.0.2/24)"}'
+vlinks:
+  - direction: forward
+    src_name: vnf_user
+    src_output: 0
+    dest_name: vnf_fw1
+    dest_input: 0
+    max_delay: 50
+  - direction: forward
+    src_name: vnf_fw1
+    src_output: 0
+    dest_name: vnf_web
+    dest_input: 0
+    max_delay: 50
