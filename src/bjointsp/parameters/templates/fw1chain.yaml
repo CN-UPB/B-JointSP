@@ -19,7 +19,7 @@ vnfs:
     inputs_bwd: 0
     outputs_fwd: 1
     outputs_bwd: 0
-    cpu: [1.0,0]
+    cpu: [1,0]
     mem: [1,0]
     out_fwd:
       - [1,0]

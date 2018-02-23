@@ -29,10 +29,9 @@ def heuristic(network_file, template_file, source_file, graphml_network=False, c
 		nodes, links = reader.read_graphml_network(network_file, cpu, mem, dr)
 	else:
 		nodes, links = reader.read_network(network_file)
-	# template, source_components = reader.read_template(template_file, return_src_components=True)
 	template, source_components = reader.read_yaml_template(template_file, return_src_components=True)
 	templates = [template]
-	sources = reader.read_sources(source_file, source_components)
+	sources = reader.read_yaml_sources(source_file, source_components)
 	fixed = []
 	input_files = [network_file, template_file, source_file]
 	# TODO: support >1 template

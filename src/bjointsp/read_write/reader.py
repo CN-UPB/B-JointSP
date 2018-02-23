@@ -233,6 +233,29 @@ def read_sources(file, source_components):
 	return sources
 
 
+# read sources from yaml file
+def read_yaml_sources(file, source_components):
+	sources = []
+	with open(file, "r") as sources_file:
+		yaml_file = yaml.load(sources_file)
+		for src in yaml_file:
+			# get the component with the specified name: first (and only) element with source name
+			try:
+				component = list(filter(lambda x: x.name == src["vnf"], source_components))[0]
+				if not component.source:
+					raise ValueError("Component {} is not a source component (required).".format(component))
+			except IndexError:
+				raise ValueError("Component {} of source unknown (not used in any template).".format(src["vnf"]))
+
+			# read flows
+			flows = []
+			for f in src["flows"]:
+				flows.append(Flow(f["id"], f["data_rate"]))		# explicit float cast necessary for dr?
+
+			sources.append(Source(src["node"], component, flows))
+	return sources
+
+
 # read fixed instances from csv-file
 def read_fixed_instances(file, components):
 	fixed_instances = []
