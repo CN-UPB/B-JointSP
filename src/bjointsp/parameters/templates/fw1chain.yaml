@@ -1,4 +1,6 @@
 name: fw1chain
+
+# list of all involved VNFs (with at least a name and an image)
 vnfs:
   - name: vnf_user
     type: source
@@ -37,6 +39,8 @@ vnfs:
     out_fwd: []
     out_bwd: []
     image: '{"image":"placement-apache-img", "network":"(id=input,ip=99.0.0.2/24)"}'
+
+# list of vLinks interconnecting the VNFs (with at least src and dest)
 vlinks:
   - direction: forward
     src: vnf_user

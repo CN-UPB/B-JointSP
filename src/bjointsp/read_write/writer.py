@@ -1,5 +1,6 @@
 import csv
 import os
+import yaml
 from collections import defaultdict
 from datetime import datetime
 import bjointsp.objective as objective
@@ -198,7 +199,7 @@ def create_result_file(network_file, subfolder, event="", seed=None, seed_subfol
 		seed = "_{}".format(seed)
 	file_name = input_file.split(".")[0]
 	timestamp = datetime.now().strftime("_%Y-%m-%d_%H-%M-%S")
-	result_file = file_name + timestamp + bounds + seed + event + ".csv"
+	result_file = file_name + timestamp + bounds + seed + event + ".yaml"
 	result_path = os.path.join(result_directory, result_file)
 
 	os.makedirs(os.path.dirname(result_path), exist_ok=True)  # create subdirectories if necessary
@@ -364,5 +365,53 @@ def write_heuristic_result(init_time, runtime, obj_value, changed, overlays, inp
 			edges.update(ol.edges)
 		save_heuristic_variables(changed, instances, edges, nodes, links)
 		write_variables(writer, links, True)
+
+	return result_file
+
+
+def write_heuristic_yaml_result(init_time, runtime, obj_value, changed, overlays, input_files, obj, event_no, event, nodes, links, seed, seed_subfolder, sources):
+	reset_global()
+
+	# initial embedding
+	if event_no == -1:
+		result_file = create_result_file(input_files[0], "heuristic", seed=seed, seed_subfolder=seed_subfolder, obj=obj)
+	# updated embedding after event
+	else:
+		result_file = create_result_file(input_files[0], "heuristic", event="_event{}".format(event_no), seed=seed, seed_subfolder=seed_subfolder, obj=obj)
+
+	# save into global variables
+	instances, edges = set(), set()
+	for ol in overlays:
+		instances.update(ol.instances)
+		edges.update(ol.edges)
+	# save_heuristic_variables(changed, instances, edges, nodes, links)
+
+	# TODO: add more details (see old result files); at least edge delays
+	# construct result as dictionary for writing into YAML result file
+	result = {"time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+			  "input": {"network": os.path.basename(input_files[0]),
+						"service": os.path.basename(input_files[1]),
+						"sources": os.path.basename(input_files[2]),
+						"seed": seed,
+						"model": "bjointsp-heuristic",
+						"objective": obj},
+			  "metrics": {"runtime": runtime,
+						  "obj_value": obj_value},
+			  "placement": {"vnfs": [],
+							"vlinks": []}}
+
+	# add solution details
+	for i in instances:
+		vnf = {"name": i.component.name, "node": i.location, "image": i.component.config}
+		result["placement"]["vnfs"].append(vnf)
+
+	for e in edges:
+		vlink = {"src_vnf": e.source.component.name, "src_node": e.source.location,
+				 "dest_vnf": e.dest.component.name, "dest_node": e.dest.location}
+		result["placement"]["vlinks"].append(vlink)
+
+	with open(result_file, "w", newline="") as outfile:
+		yaml.dump(result, outfile, default_flow_style=False)
+		print("Writing solution to {}".format(result_file))
 
 	return result_file

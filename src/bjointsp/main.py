@@ -19,6 +19,7 @@ obj = objective.COMBINED
 # network: NetworkX graph, service: YAML file, sources: YAML file
 def place(network, service, sources):
 	# TODO: this needs to trigger heuristic
+	# TODO: cleanup - rem. non-yaml methods, etc that's not needed anymore
 	pass
 
 
@@ -53,7 +54,7 @@ def heuristic(network_file, template_file, source_file, graphml_network=False, c
 	print("Initial embedding\n")
 	# TODO: make less verbose or only as verbose when asked for (eg, with -v argument)
 	init_time, runtime, obj_value, changed, overlays = control.solve(nodes, links, templates, {}, sources, fixed, obj)
-	result = writer.write_heuristic_result(init_time, runtime, obj_value, changed, overlays.values(), input_files, obj, -1, "Initial embedding", nodes, links, seed, seed_subfolder, sources)
+	result = writer.write_heuristic_yaml_result(init_time, runtime, obj_value, changed, overlays.values(), input_files, obj, -1, "Initial embedding", nodes, links, seed, seed_subfolder, sources)
 
 	# if events exists, update input accordingly and solve again for each event until last event is reached
 	# event_no = 0
