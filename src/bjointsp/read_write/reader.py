@@ -160,26 +160,21 @@ def read_sources(file, source_components):
 	return sources
 
 
-# read fixed instances from csv-file
+# read fixed instances from yaml file
 def read_fixed_instances(file, components):
 	fixed_instances = []
-	with open(file, "r") as sources_file:
-		reader = csv.reader((row for row in sources_file if not row.startswith("#")), delimiter=" ")
-		for row in reader:
-			row = remove_empty_values(row)  # deal with multiple spaces in a row leading to empty values
+	with open(file, "r") as stream:
+		fixed = yaml.load(stream)
+		for i in fixed:
+			# get the component with the specified name: first (and only) element with component name
+			try:
+				component = list(filter(lambda x: x.name == i["vnf"], components))[0]
+				if component.source:
+					raise ValueError("Component {} is a source component (forbidden).".format(component))
+			except IndexError:
+				raise ValueError("Component {} of fixed instance unknown (not used in any template).".format(i["vnf"]))
 
-			if len(row) == 2:
-				try:
-					# get the component with the specified name: first (and only) element with component name
-					component = list(filter(lambda x: x.name == row[1], components))[0]
-					if component.source:
-						raise ValueError("Component {} is a source component (forbidden).".format(component))
-				except IndexError:
-					raise ValueError("Component {} of fixed instance unknown (not used in any template).".format(row[1]))
-
-				# fixed instance = (nodeID, component)
-				instance = FixedInstance(row[0], component)
-				fixed_instances.append(instance)
+			fixed_instances.append(FixedInstance(i["node"], component))
 	return fixed_instances
 
 

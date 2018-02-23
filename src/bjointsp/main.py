@@ -16,7 +16,7 @@ obj = objective.COMBINED
 
 
 # solve with heuristic; interface to place-emu: triggers placement
-def place(network_file, template_file, source_file, graphml_network=False, cpu=None, mem=None, dr=None):
+def place(network_file, template_file, source_file, fixed_file=None, graphml_network=False, cpu=None, mem=None, dr=None):
 	if graphml_network:
 		nodes, links = reader.read_graphml_network(network_file, cpu, mem, dr)
 	else:
@@ -25,8 +25,11 @@ def place(network_file, template_file, source_file, graphml_network=False, cpu=N
 	templates = [template]
 	sources = reader.read_sources(source_file, source_components)
 	fixed = []
+	if fixed_file is not None:
+		components = {j for t in templates for j in t.components}
+		fixed = reader.read_fixed_instances(fixed_file, components)
 	input_files = [network_file, template_file, source_file]
-	# TODO: support >1 template, fixed, prev_embedding, events
+	# TODO: support >1 template, prev_embedding, events
 
 	seed = random.randint(0, 9999)
 	seed_subfolder = False
@@ -65,14 +68,15 @@ def parse_args():
 	parser = argparse.ArgumentParser(description="B-JointSP heuristic calculates an optimized placement")
 	parser.add_argument("-n", "--network", help="Network input file (.graphml)", required=True, default=None, dest="network")
 	parser.add_argument("-t", "--template", help="Template input file (.yaml)", required=True, default=None, dest="template")
-	parser.add_argument("-s", "--sources", help="Sources input file (.csv)", required=True, default=None, dest="sources")
+	parser.add_argument("-s", "--sources", help="Sources input file (.yaml)", required=True, default=None, dest="sources")
+	parser.add_argument("-f", "--fixed", help="Fixed instances input file (.yaml)", required=False, default=None, dest="fixed")
 	return parser.parse_args()
 
 
 def main():
 	args = parse_args()
 	# TODO: allow to set cpu, mem, dr as args; or take them from graphml
-	place(args.network, args.template, args.sources, graphml_network=True, cpu=10, mem=10, dr=50)
+	place(args.network, args.template, args.sources, fixed_file=args.fixed, graphml_network=True, cpu=10, mem=10, dr=50)
 
 
 if __name__ == '__main__':
