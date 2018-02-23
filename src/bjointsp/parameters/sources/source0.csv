@@ -1,0 +1,3 @@
+# data sources: node_id source_component flows
+# flows: (flow_id data_rate)+
+pop0 vnf_user f1 1

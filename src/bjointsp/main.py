@@ -5,7 +5,6 @@ import logging
 import argparse
 from datetime import datetime
 import os
-import yaml
 import bjointsp.read_write.reader as reader
 import bjointsp.read_write.writer as writer
 from bjointsp.heuristic import control
@@ -19,8 +18,8 @@ obj = objective.COMBINED
 # interface to place-emu: triggers placement
 # network: NetworkX graph, service: YAML file, sources: YAML file
 def place(network, service, sources):
-	service = yaml.load(service)
-	print(service["name"])
+	# TODO: this needs to trigger heuristic
+	pass
 
 
 # solve with heuristic
@@ -30,7 +29,8 @@ def heuristic(network_file, template_file, source_file, graphml_network=False, c
 		nodes, links = reader.read_graphml_network(network_file, cpu, mem, dr)
 	else:
 		nodes, links = reader.read_network(network_file)
-	template, source_components = reader.read_template(template_file, return_src_components=True)
+	# template, source_components = reader.read_template(template_file, return_src_components=True)
+	template, source_components = reader.read_yaml_template(template_file, return_src_components=True)
 	templates = [template]
 	sources = reader.read_sources(source_file, source_components)
 	fixed = []
@@ -75,17 +75,15 @@ def heuristic(network_file, template_file, source_file, graphml_network=False, c
 def parse_args():
 	parser = argparse.ArgumentParser(description="B-JointSP heuristic calculates an optimized placement")
 	parser.add_argument("-n", "--network", help="Network input file (.graphml)", required=True, default=None, dest="network")
-	parser.add_argument("-t", "--template", help="Template input file (.csv)", required=True, default=None, dest="template")
+	parser.add_argument("-t", "--template", help="Template input file (.yaml)", required=True, default=None, dest="template")
 	parser.add_argument("-s", "--sources", help="Sources input file (.csv)", required=True, default=None, dest="sources")
 	return parser.parse_args()
 
 
 def main():
-	# args = parse_args()
-	# # TODO: allow to set cpu, mem, dr as args; or take them from graphml
-	# heuristic(args.network, args.template, args.sources, graphml_network=True, cpu=10, mem=10, dr=50)
-	with open("parameters/templates/fw1chain.yaml", "r") as service:
-		place(None, service, None)
+	args = parse_args()
+	# TODO: allow to set cpu, mem, dr as args; or take them from graphml
+	heuristic(args.network, args.template, args.sources, graphml_network=True, cpu=10, mem=10, dr=50)
 
 
 if __name__ == '__main__':
