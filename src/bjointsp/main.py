@@ -24,12 +24,12 @@ def place(network_file, template_file, source_file, fixed_file=None, graphml_net
 	template, source_components = reader.read_template(template_file, return_src_components=True)
 	templates = [template]
 	sources = reader.read_sources(source_file, source_components)
+	components = {j for t in templates for j in t.components}
 	fixed = []
 	if fixed_file is not None:
-		components = {j for t in templates for j in t.components}
 		fixed = reader.read_fixed_instances(fixed_file, components)
-	input_files = [network_file, template_file, source_file]
-	# TODO: support >1 template, prev_embedding, events
+	input_files = [network_file, template_file, source_file, fixed_file]
+	# TODO: support >1 template
 
 	seed = random.randint(0, 9999)
 	seed_subfolder = False
@@ -48,18 +48,6 @@ def place(network_file, template_file, source_file, fixed_file=None, graphml_net
 	# TODO: make less verbose or only as verbose when asked for (eg, with -v argument)
 	init_time, runtime, obj_value, changed, overlays = control.solve(nodes, links, templates, {}, sources, fixed, obj)
 	result = writer.write_heuristic_result(init_time, runtime, obj_value, changed, overlays.values(), input_files, obj, -1, "Initial embedding", nodes, links, seed, seed_subfolder, sources)
-
-	# if events exists, update input accordingly and solve again for each event until last event is reached
-	# event_no = 0
-	# while events is not None and event_no is not None:
-	# 	print("\n------------------------------------------------\n")
-	# 	logging.info("\n------------------------------------------------\n")
-	# 	logging.info("Embedding event {} at {}".format(event_no, datetime.now().strftime("%Y-%m-%d_%H-%M-%S")))
-	#
-	# 	new_no, event, templates, sources, fixed = reader.read_event(events, event_no, templates, sources, fixed)
-	# 	init_time, runtime, obj_value, changed, overlays = control.solve(nodes, links, templates, overlays, sources, fixed, obj)
-	# 	result = writer.write_heuristic_result(init_time, runtime, obj_value, changed, overlays.values(), scenario, obj, event_no, event, nodes, links, seed, seed_subfolder, sources)
-	# 	event_no = new_no
 
 	return result
 

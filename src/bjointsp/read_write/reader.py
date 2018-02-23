@@ -1,9 +1,7 @@
 import csv
-from collections import defaultdict
 import networkx as nx
 import yaml
 from geopy.distance import vincenty
-import bjointsp.template.adapter as adapter
 from bjointsp.fixed.fixed_instance import FixedInstance
 from bjointsp.fixed.source import Source
 from bjointsp.network.links import Links
@@ -12,7 +10,6 @@ from bjointsp.overlay.flow import Flow
 from bjointsp.template.arc import Arc
 from bjointsp.template.component import Component
 from bjointsp.template.template import Template
-import os
 
 
 # remove empty values (from multiple delimiters in a row)
@@ -176,141 +173,3 @@ def read_fixed_instances(file, components):
 
 			fixed_instances.append(FixedInstance(i["node"], component))
 	return fixed_instances
-
-
-# read previous overlay from csv-file (only for MIP)
-def read_prev_embedding(file, components):
-	# store overlay in a dictionary (component: list of nodes)
-	prev_embedding = defaultdict(list)
-	with open(file, "r") as embedding_file:
-		reader = csv.reader((row for row in embedding_file if not row.startswith("#")))
-		for row in reader:
-			# row = remove_empty_values(row)  # deal with multiple spaces in a row leading to empty values
-			row = row[0].split()
-
-			if len(row) == 2:
-				try:
-					# get the component with the specified name: first (and only) element with component name
-					component = list(filter(lambda x: x.name == row[1], components))[0]
-				except IndexError:
-					raise ValueError("Component {} of prev overlay unknown (not used in any template).".format(row[1]))
-
-				prev_embedding[component].append(row[0])
-	return prev_embedding
-
-
-# read event from the specified row number of the specified csv-file and return updated input (only for heuristic)
-def read_event(file, event_no, templates, sources, fixed):
-	directory = os.path.dirname(file)  # directory of the scenario file
-
-	with open(file, "r") as csvfile:
-		reader = csv.reader((row for row in csvfile if not row.startswith("#") and len(row) > 1), delimiter=" ")
-		# continue reading from file_position
-		events = list(reader)
-		event_row = events[event_no]
-		event_row = remove_empty_values(event_row)  # deal with multiple spaces in a row leading to empty values
-
-		# handle event and update corresponding input
-		if event_row[0] == "templates:":
-			print("Update templates: {}\n".format(event_row[1:]))
-			templates = []
-			for template_file in event_row[1:]:					# iterate over all templates, skipping the "templates:"
-				path = os.path.join(directory, template_file)
-				template = read_template(path)
-				templates.append(template)
-			templates = adapter.adapt_for_reuse(templates)		# add ports etc on the fly
-
-		elif event_row[0] == "sources:":
-			print("Update sources: {}\n".format(event_row[1]))
-
-			# collect source components
-			source_components = set()
-			for t in templates:
-				source_components.update([j for j in t.components if j.source])
-
-			path = os.path.join(directory, event_row[1])
-			sources = read_sources(path, source_components)
-
-		elif event_row[0] == "fixed:":
-			print("Update fixed instances: {}\n".format(event_row[1]))
-
-			# collect non-source components of used templates
-			possible_components = set()
-			for template in templates:
-				possible_components.update([j for j in template.components if not j.source])
-			path = os.path.join(directory, event_row[1])
-			fixed = read_fixed_instances(path, possible_components)
-
-		else:
-			print("Event not recognized (=> ignore): {}".format(event_row))
-
-		# increment to next row number if it exists; if the last row is reached, set row_no to None
-		event_no += 1
-		if event_no >= len(events):
-			event_no = None
-
-	return event_no, event_row, templates, sources, fixed
-
-
-# read scenario with all inputs for a problem instance (inputs must be listed and read in the specified order)
-# substrate network, templates, previous overlay, sources, fixed instances
-def read_scenario(file, graphml_network=False, cpu=None, mem=None, dr=None):
-	# initialize inputs as empty (except network, this is always required)
-	templates, sources, fixed_instances = [], [], []
-	prev_embedding = defaultdict(list)
-	events = None
-
-	directory = os.path.dirname(file)							# directory of the scenario file
-
-	with open(file, "r") as csvfile:
-		reader = csv.reader((row for row in csvfile if not row.startswith("#")), delimiter=" ")
-		for row in reader:
-			row = remove_empty_values(row)  # deal with multiple spaces in a row leading to empty values
-
-			if len(row) > 1:									# only consider rows with 1+ file name(s)
-				if row[0] == "network:":
-					path = os.path.join(directory, row[1])		# look in the same directory as the scenario file
-					if graphml_network:
-						network = read_graphml_network(path, cpu, mem, dr)
-					else:
-						network = read_network(path)
-					nodes = network[0]
-					links = network[1]
-
-				elif row[0] == "templates:":
-					for template_file in row[1:]:				# iterate over all templates, skipping the "templates:"
-						path = os.path.join(directory, template_file)
-						template = read_template(path)
-						templates.append(template)
-					templates = adapter.adapt_for_reuse(templates)		# add ports etc on the fly
-
-				elif row[0] == "sources:":
-					# collect source components
-					source_components = set()
-					for t in templates:
-						source_components.update([j for j in t.components if j.source])
-
-					path = os.path.join(directory, row[1])
-					sources = read_sources(path, source_components)
-
-				elif row[0] == "fixed:":
-					# collect non-source components of used templates
-					possible_components = set()
-					for template in templates:
-						possible_components.update([j for j in template.components if not j.source])
-					path = os.path.join(directory, row[1])
-					fixed_instances = read_fixed_instances(path, possible_components)
-
-				elif row[0] == "prev_embedding:":
-					# collect all components
-					components = set()
-					for t in templates:
-						components.update(t.components)
-					path = os.path.join(directory, row[1])
-					prev_embedding = read_prev_embedding(path, components)
-
-				elif row[0] == "events:":
-					# set path to events-file
-					events = os.path.join(directory, row[1])
-
-	return nodes, links, templates, sources, fixed_instances, prev_embedding, events
