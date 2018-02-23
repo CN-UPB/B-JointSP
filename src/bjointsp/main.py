@@ -15,28 +15,18 @@ import bjointsp.objective as objective
 obj = objective.COMBINED
 
 
-# interface to place-emu: triggers placement
-# network: NetworkX graph, service: YAML file, sources: YAML file
-def place(network, service, sources):
-	# TODO: this needs to trigger heuristic
-	# TODO: cleanup - rem. non-yaml methods, etc that's not needed anymore
-	pass
-
-
-# solve with heuristic
-def heuristic(network_file, template_file, source_file, graphml_network=False, cpu=None, mem=None, dr=None):
-	# nodes, links, templates, sources, fixed, prev_embedding, events = reader.read_scenario(scenario, graphml_network, cpu, mem, dr)
+# solve with heuristic; interface to place-emu: triggers placement
+def place(network_file, template_file, source_file, graphml_network=False, cpu=None, mem=None, dr=None):
 	if graphml_network:
 		nodes, links = reader.read_graphml_network(network_file, cpu, mem, dr)
 	else:
 		nodes, links = reader.read_network(network_file)
-	template, source_components = reader.read_yaml_template(template_file, return_src_components=True)
+	template, source_components = reader.read_template(template_file, return_src_components=True)
 	templates = [template]
-	sources = reader.read_yaml_sources(source_file, source_components)
+	sources = reader.read_sources(source_file, source_components)
 	fixed = []
 	input_files = [network_file, template_file, source_file]
-	# TODO: support >1 template
-	# TODO: support fixed, prev_embedding, events
+	# TODO: support >1 template, fixed, prev_embedding, events
 
 	seed = random.randint(0, 9999)
 	seed_subfolder = False
@@ -54,7 +44,7 @@ def heuristic(network_file, template_file, source_file, graphml_network=False, c
 	print("Initial embedding\n")
 	# TODO: make less verbose or only as verbose when asked for (eg, with -v argument)
 	init_time, runtime, obj_value, changed, overlays = control.solve(nodes, links, templates, {}, sources, fixed, obj)
-	result = writer.write_heuristic_yaml_result(init_time, runtime, obj_value, changed, overlays.values(), input_files, obj, -1, "Initial embedding", nodes, links, seed, seed_subfolder, sources)
+	result = writer.write_heuristic_result(init_time, runtime, obj_value, changed, overlays.values(), input_files, obj, -1, "Initial embedding", nodes, links, seed, seed_subfolder, sources)
 
 	# if events exists, update input accordingly and solve again for each event until last event is reached
 	# event_no = 0
@@ -68,8 +58,7 @@ def heuristic(network_file, template_file, source_file, graphml_network=False, c
 	# 	result = writer.write_heuristic_result(init_time, runtime, obj_value, changed, overlays.values(), scenario, obj, event_no, event, nodes, links, seed, seed_subfolder, sources)
 	# 	event_no = new_no
 
-	# TODO: wrap result into a result class with all inputs and outputs?
-	return result, overlays, templates
+	return result
 
 
 def parse_args():
@@ -83,7 +72,7 @@ def parse_args():
 def main():
 	args = parse_args()
 	# TODO: allow to set cpu, mem, dr as args; or take them from graphml
-	heuristic(args.network, args.template, args.sources, graphml_network=True, cpu=10, mem=10, dr=50)
+	place(args.network, args.template, args.sources, graphml_network=True, cpu=10, mem=10, dr=50)
 
 
 if __name__ == '__main__':

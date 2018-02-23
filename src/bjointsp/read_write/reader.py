@@ -15,26 +15,6 @@ from bjointsp.template.template import Template
 import os
 
 
-# convert a string (eg., "[1,2]") into a list of float-coefficients (eg., [1.0,2.0])
-def coeff_list(string):
-	if len(string) == 2:  				# empty list "[]"
-		return []
-	result = string[1:-1].split(",")  	# remove brackets and split
-	result = list(map(float, result))  	# convert to float-list
-	return result
-
-
-# convert string (eg., "[[1,2],[3.5]]" into multiple coeff-lists (eg., [1.0,2.0],[3.5])
-def coeff_lists(string):
-	if len(string) == 2:  				# empty list "[]"
-		return []
-	result = []
-	strings = string[1:-1].split(";")  	# remove brackets and split
-	for item in strings:  				# convert strings to float-lists
-		result.append(coeff_list(item))
-	return result
-
-
 # remove empty values (from multiple delimiters in a row)
 def remove_empty_values(line):
 	result = []
@@ -129,55 +109,8 @@ def read_graphml_network(file, cpu, mem, dr):
 	return nodes, links
 
 
-# read template from csv-file, optionally return the source components too
-def read_template(file, return_src_components=False):
-	components, arcs = [], []
-	with open(file, "r") as template_file:
-		reader = csv.reader((row for row in template_file if not row.startswith("#")), delimiter="\t")
-		for row in reader:
-			row = remove_empty_values(row)  # deal with multiple tabs in a row leading to empty values
-
-			# template name
-			if len(row) == 1:
-				name = row[0]
-
-			# components: name, type, stateful, inputs, in_back, outputs, out_back, [cpu_coeff], [mem_coeff],
-			# [[outgoing_coeff]], [[outgoing_back]], opt:vnf_image
-			if len(row) >= 11:
-				if row[1].strip() == "source":
-					stateful = True		# source instances always considered stateful
-				else:
-					stateful = row[2].strip() == "True"
-				inputs = (int(row[3]), int(row[4]))
-				outputs = (int(row[5]), int(row[6]))
-				cpu = coeff_list(row[7])
-				mem = coeff_list(row[8])
-				outgoing = (coeff_lists(row[9]), coeff_lists(row[10]))
-				config = None
-				if len(row) == 12:
-					config = row[11]
-				component = Component(row[0], row[1].strip(), stateful, inputs, outputs, cpu, mem, outgoing, config)
-				components.append(component)
-
-			# arcs: direction, src_name, src_output, dest_name, dest_input, max_delay
-			if len(row) == 6:
-				source = list(filter(lambda x: x.name == row[1].strip(), components))[0]  # get component with specified name
-				dest = list(filter(lambda x: x.name == row[3].strip(), components))[0]
-				arc = Arc(row[0].strip(), source, int(row[2]), dest, int(row[4]), float(row[5]))
-				arcs.append(arc)
-
-	template = Template(name, components, arcs)
-	update_stateful(template)
-
-	if return_src_components:
-		source_components = {j for j in components if j.source}
-		return template, source_components
-
-	return template
-
-
 # read template from yaml file
-def read_yaml_template(file, return_src_components=False):
+def read_template(file, return_src_components=False):
 	components, arcs = [], []
 	with open(file, "r") as template_file:
 		template = yaml.load(template_file)
@@ -204,36 +137,8 @@ def read_yaml_template(file, return_src_components=False):
 	return template
 
 
-# read sources from csv-file
-def read_sources(file, source_components):
-	sources = []
-	with open(file, "r") as sources_file:
-		reader = csv.reader((row for row in sources_file if not row.startswith("#")), delimiter=" ")
-		for row in reader:
-			row = remove_empty_values(row)  # deal with multiple spaces in a row leading to empty values
-
-			if len(row) >= 4 and len(row) % 2 == 0:
-				try:
-					# get the component with the specified name: first (and only) element with source name
-					component = list(filter(lambda x: x.name == row[1], source_components))[0]
-					if not component.source:
-						raise ValueError("Component {} is not a source component (required).".format(component))
-				except IndexError:
-					raise ValueError("Component {} of source unknown (not used in any template).".format(row[1]))
-
-				# read flows
-				flows = []
-				for i in range(2, len(row), 2):
-					flows.append(Flow(row[i], float(row[i+1])))
-
-				# source = (nodeID, source component, data rate)
-				source = Source(row[0], component, flows)
-				sources.append(source)
-	return sources
-
-
 # read sources from yaml file
-def read_yaml_sources(file, source_components):
+def read_sources(file, source_components):
 	sources = []
 	with open(file, "r") as sources_file:
 		yaml_file = yaml.load(sources_file)

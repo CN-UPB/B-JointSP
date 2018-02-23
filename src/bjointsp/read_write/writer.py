@@ -329,56 +329,6 @@ def write_heuristic_result(init_time, runtime, obj_value, changed, overlays, inp
 	else:
 		result_file = create_result_file(input_files[0], "heuristic", event="_event{}".format(event_no), seed=seed, seed_subfolder=seed_subfolder, obj=obj)
 
-	with open(result_file, "w", newline="") as csvfile:
-		writer = csv.writer(csvfile, delimiter="\t")
-		print("Writing solution to {}".format(result_file))
-
-		# write input information
-		writer.writerow(["End time: " + datetime.now().strftime("%Y-%m-%d %H:%M:%S")])
-		writer.writerow(["Seed: {}".format(seed)])
-		write_inputs(writer, input_files, sources)
-		writer.writerow(["Model: Heuristic"])
-		if obj == objective.COMBINED:
-			writer.writerow(["Objective: COMBINED"])
-		elif obj == objective.OVER_SUB:
-			writer.writerow(["Objective: OVER_SUB"])
-		elif obj == objective.DELAY:
-			writer.writerow(["Objective: DELAY"])
-		elif obj == objective.CHANGED:
-			writer.writerow(["Objective: CHANGED"])
-		elif obj == objective.RESOURCES:
-			writer.writerow(["Objective: RESOURCES"])
-		else:
-			raise ValueError("Objective {} unknown".format(obj))
-		writer.writerow(["Event: {} (Event {})".format(event, event_no)])
-		writer.writerow("")
-
-		# write solution details
-		writer.writerow(["Pre-computation of shortest paths: {}".format(init_time)])
-		writer.writerow(["Runtime: {}".format(runtime)])
-		writer.writerow(["Objective value: {}".format(obj_value)])
-		writer.writerow("")
-
-		instances, edges = set(), set()
-		for ol in overlays:
-			instances.update(ol.instances)
-			edges.update(ol.edges)
-		save_heuristic_variables(changed, instances, edges, nodes, links)
-		write_variables(writer, links, True)
-
-	return result_file
-
-
-def write_heuristic_yaml_result(init_time, runtime, obj_value, changed, overlays, input_files, obj, event_no, event, nodes, links, seed, seed_subfolder, sources):
-	reset_global()
-
-	# initial embedding
-	if event_no == -1:
-		result_file = create_result_file(input_files[0], "heuristic", seed=seed, seed_subfolder=seed_subfolder, obj=obj)
-	# updated embedding after event
-	else:
-		result_file = create_result_file(input_files[0], "heuristic", event="_event{}".format(event_no), seed=seed, seed_subfolder=seed_subfolder, obj=obj)
-
 	# save into global variables
 	instances, edges = set(), set()
 	for ol in overlays:

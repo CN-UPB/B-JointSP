@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='bjointsp',
-	version='2.2.0',
+	version='2.3.0',
 	license='Apache 2.0',
 	description='B-JointSP provides algorithms for joint scaling and placement of uni- or bidirectional network services',
 	url='https://github.com/CN-UPB/B-JointSP',
