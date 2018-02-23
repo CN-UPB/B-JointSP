@@ -185,13 +185,12 @@ def read_yaml_template(file, return_src_components=False):
 			inputs = (vnf["inputs_fwd"], vnf["inputs_bwd"])
 			outputs = (vnf["outputs_fwd"], vnf["outputs_bwd"])
 			outgoing = (vnf["out_fwd"], vnf["out_bwd"])
-			component = Component(vnf["name"], vnf["type"], vnf["stateful"], inputs, outputs, vnf["cpu"], vnf["mem"],
-								  outgoing, vnf["vnf_image"])
+			component = Component(vnf["name"], vnf["type"], vnf["stateful"], inputs, outputs, vnf["cpu"], vnf["mem"], outgoing, vnf["image"])
 			components.append(component)
 
 		for arc in template["vlinks"]:
-			source = list(filter(lambda x: x.name == arc["src_name"], components))[0]  # get component with specified name
-			dest = list(filter(lambda x: x.name == arc["dest_name"], components))[0]
+			source = list(filter(lambda x: x.name == arc["src"], components))[0]  # get component with specified name
+			dest = list(filter(lambda x: x.name == arc["dest"], components))[0]
 			arc = Arc(arc["direction"], source, arc["src_output"], dest, arc["dest_input"], arc["max_delay"])
 			arcs.append(arc)
 
