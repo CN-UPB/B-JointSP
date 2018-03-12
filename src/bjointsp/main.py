@@ -16,11 +16,8 @@ obj = objective.COMBINED
 
 
 # solve with heuristic; interface to place-emu: triggers placement
-def place(network_file, template_file, source_file, fixed_file=None, graphml_network=False, cpu=None, mem=None, dr=None):
-    if graphml_network:
-        nodes, links = reader.read_graphml_network(network_file, cpu, mem, dr)
-    else:
-        nodes, links = reader.read_network(network_file)
+def place(network_file, template_file, source_file, fixed_file=None, cpu=None, mem=None, dr=None):
+    nodes, links = reader.read_network(network_file, cpu, mem, dr)
     template, source_components = reader.read_template(template_file, return_src_components=True)
     templates = [template]
     sources = reader.read_sources(source_file, source_components)
@@ -63,8 +60,7 @@ def parse_args():
 
 def main():
     args = parse_args()
-    # TODO: allow to set cpu, mem, dr as args; or take them from graphml
-    place(args.network, args.template, args.sources, fixed_file=args.fixed, graphml_network=True, cpu=10, mem=10, dr=50)
+    place(args.network, args.template, args.sources, fixed_file=args.fixed, cpu=10, mem=10, dr=50)
 
 
 if __name__ == '__main__':

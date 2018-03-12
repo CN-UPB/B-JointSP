@@ -39,48 +39,42 @@ def update_stateful(template):
                 j.stateful = False
 
 
-# read substrate network from csv-file
-def read_network(file):
-    node_ids, node_cpu, node_mem = [], {}, {}
-    link_ids, link_dr, link_delay = [], {}, {}
-    with open(file, "r") as network_file:
-        reader = csv.reader((row for row in network_file if not row.startswith("#")), delimiter=" ")
-        for row in reader:
-            row = remove_empty_values(row)  # deal with multiple spaces in a row leading to empty values
-
-            if len(row) == 3:  # nodes: id, cpu, mem
-                node_id = row[0]
-                node_ids.append(node_id)
-                node_cpu[node_id] = float(row[1])
-                node_mem[node_id] = float(row[2])
-
-            if len(row) == 4:  # arcs: src_id, sink_id, cap, delay
-                ids = (row[0], row[1])
-                link_ids.append(ids)
-                link_dr[ids] = float(row[2])
-                link_delay[ids] = float(row[3])
-
-    nodes = Nodes(node_ids, node_cpu, node_mem)
-    links = Links(link_ids, link_dr, link_delay)
-    return nodes, links
-
-
-# read substrate network from csv-file, set specified node and link capacities
+# read substrate network from graphml-file using NetworkX, set specified node and link capacities
 # IMPORTANT: for consistency with emulator, all node IDs are prefixed with "pop" and have to be referenced as such (eg, in source locations)
-def read_graphml_network(file, cpu, mem, dr):
+def read_network(file, cpu, mem, dr):
     SPEED_OF_LIGHT = 299792458  # meter per second
     PROPAGATION_FACTOR = 0.77  	# https://en.wikipedia.org/wiki/Propagation_delay
 
     if not file.endswith(".graphml"):
         raise ValueError("{} is not a GraphML file".format(file))
     network = nx.read_graphml(file, node_type=int)
-    # set nodes (uniform capacities as specified)
-    node_ids = ["pop{}".format(n) for n in network.nodes]		# add "pop" to node index (eg, 1 --> pop1)
-    node_cpu = {"pop{}".format(n): cpu for n in network.nodes}
-    node_mem = {"pop{}".format(n): mem for n in network.nodes}
 
+    # set nodes
+    node_ids = ["pop{}".format(n) for n in network.nodes]		# add "pop" to node index (eg, 1 --> pop1)
+    # if specified, use the provided uniform node capacities
+    if cpu is not None and mem is not None:
+        node_cpu = {"pop{}".format(n): cpu for n in network.nodes}
+        node_mem = {"pop{}".format(n): mem for n in network.nodes}
+    # else try to read them from the the node attributes (ie, graphml)
+    else:
+        cpu = nx.get_node_attributes(network, 'cpu')
+        mem = nx.get_node_attributes(network, 'mem')
+        try:
+            node_cpu = {"pop{}".format(n): cpu[n] for n in network.nodes}
+            node_mem = {"pop{}".format(n): mem[n] for n in network.nodes}
+        except KeyError:
+            raise ValueError("No CPU or mem. specified for {} (as cmd argument or in graphml)".format(file))
+
+    # set links
     link_ids = [("pop{}".format(e[0]), "pop{}".format(e[1])) for e in network.edges]
-    link_dr = {("pop{}".format(e[0]), "pop{}".format(e[1])): dr for e in network.edges}
+    if dr is not None:
+        link_dr = {("pop{}".format(e[0]), "pop{}".format(e[1])): dr for e in network.edges}
+    else:
+        dr = nx.get_edge_attributes(network, 'dr')
+        try:
+            link_dr = {("pop{}".format(e[0]), "pop{}".format(e[1])): dr[e] for e in network.edges}
+        except KeyError:
+            raise ValueError("No link data rate specified for {} (as cmd argument or in graphml)".format(file))
 
     # calculate link delay based on geo positions of nodes; duplicate links for bidirectionality
     link_delay = {}
