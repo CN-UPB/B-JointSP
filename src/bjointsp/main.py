@@ -44,7 +44,7 @@ def place(network_file, template_file, source_file, fixed_file=None, cpu=None, m
     print("Initial embedding\n")
     # TODO: make less verbose or only as verbose when asked for (eg, with -v argument)
     init_time, runtime, obj_value, changed, overlays = control.solve(nodes, links, templates, {}, sources, fixed, obj)
-    result = writer.write_heuristic_result(init_time, runtime, obj_value, changed, overlays.values(), input_files, obj, -1, "Initial embedding", nodes, links, seed, seed_subfolder, sources)
+    result = writer.write_heuristic_result(runtime, obj_value, changed, overlays.values(), input_files, obj, nodes, links, seed, seed_subfolder)
 
     return result
 
