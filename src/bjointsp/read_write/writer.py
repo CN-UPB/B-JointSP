@@ -59,28 +59,28 @@ def save_heuristic_variables(result, changed_instances, instances, edges, nodes,
         result["placement"]["vlinks"].append(vlink)
 
     # node capacity violations
-    result["metrics"]["cpu_oversub"] = []
-    result["metrics"]["mem_oversub"] = []
+    result["placement"]["cpu_oversub"] = []
+    result["placement"]["mem_oversub"] = []
     max_cpu, max_mem = 0, 0
     for v in nodes.ids:
         over_cpu = sum(i.consumed_cpu() for i in instances if i.location == v) - nodes.cpu[v]
         if over_cpu > 0:
-            result["metrics"]["cpu_oversub"].append({"node": v})
+            result["placement"]["cpu_oversub"].append({"node": v})
             if over_cpu > max_cpu:
                 max_cpu = over_cpu
         over_mem = sum(i.consumed_mem() for i in instances if i.location == v) - nodes.mem[v]
         if over_mem > 0:
-            result["metrics"]["mem_oversub"].append({"node": v})
+            result["placement"]["mem_oversub"].append({"node": v})
             if over_mem > max_mem:
                 max_mem = over_mem
     result["metrics"]["max_cpu_oversub"] = max_cpu
     result["metrics"]["max_mem_oversub"] = max_mem
 
     # consumed node resources
-    result["metrics"]["alloc_node_res"] = []
+    result["placement"]["alloc_node_res"] = []
     for i in instances:
         resources = {"name": i.component.name, "node": i.location, "cpu": i.consumed_cpu(), "mem": i.consumed_mem()}
-        result["metrics"]["alloc_node_res"].append(resources)
+        result["placement"]["alloc_node_res"].append(resources)
 
     # changed instances (compared to previous embedding)
     result["metrics"]["changed"] = []
@@ -88,14 +88,14 @@ def save_heuristic_variables(result, changed_instances, instances, edges, nodes,
         result["metrics"]["changed"].append({"name": i.component.name, "node": i.location})
 
     # edge and link data rate, used links
-    result["metrics"]["flows"] = []
+    result["placement"]["flows"] = []
     result["metrics"]["edge_delays"] = []
-    result["metrics"]["links"] = []
+    result["placement"]["links"] = []
     consumed_dr = defaultdict(int)		# default = 0
     for e in edges:
         for f in e.flows:
             flow = {"arc": str(e.arc), "src_node": e.source.location, "dst_node": e.dest.location, "flow_id": f.id}
-            result["metrics"]["flows"].append(flow)
+            result["placement"]["flows"].append(flow)
         for path in e.paths:
             # record edge delay: all flows take the same (shortest) path => take path delay
             delay = {"arc": str(e.arc), "src_node": e.source.location, "dst_node": e.dest.location, "delay": sp.path_delay(links, path)}
@@ -107,14 +107,14 @@ def save_heuristic_variables(result, changed_instances, instances, edges, nodes,
                 if path[i] != path[i+1]:
                     consumed_dr[(path[i], path[i+1])] += e.flow_dr() / len(e.paths)
                     link = {"arc": str(e.arc), "edge_src": e.source.location, "edge_dst": e.dest.location, "link_src": path[i], "link_dst": path[i+1]}
-                    result["metrics"]["links"].append(link)
+                    result["placement"]["links"].append(link)
 
     # link capacity violations
-    result["metrics"]["dr_oversub"] = []
+    result["placement"]["dr_oversub"] = []
     max_dr = 0
     for l in links.ids:
         if links.dr[l] < consumed_dr[l]:
-            result["metrics"]["dr_oversub"].append({"link": l})
+            result["placement"]["dr_oversub"].append({"link": l})
             if consumed_dr[l] - links.dr[l] > max_dr:
                 max_dr = consumed_dr[l] - links.dr[l]
     result["metrics"]["max_dr_oversub"] = max_dr
