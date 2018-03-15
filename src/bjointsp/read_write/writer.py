@@ -89,7 +89,7 @@ def save_heuristic_variables(result, changed_instances, instances, edges, nodes,
 
     # edge and link data rate, used links
     result["placement"]["flows"] = []
-    result["metrics"]["edge_delays"] = []
+    result["metrics"]["delays"] = []
     result["placement"]["links"] = []
     consumed_dr = defaultdict(int)		# default = 0
     for e in edges:
@@ -98,8 +98,8 @@ def save_heuristic_variables(result, changed_instances, instances, edges, nodes,
             result["placement"]["flows"].append(flow)
         for path in e.paths:
             # record edge delay: all flows take the same (shortest) path => take path delay
-            delay = {"arc": str(e.arc), "src_node": e.source.location, "dst_node": e.dest.location, "delay": sp.path_delay(links, path)}
-            result["metrics"]["edge_delays"].append(delay)
+            delay = {"src": e.arc.source.name, "dest": e.arc.dest.name, "src_node": e.source.location, "dest_node": e.dest.location, "delay": sp.path_delay(links, path)}
+            result["metrics"]["delays"].append(delay)
 
             # go through nodes of each path and increase the dr of the traversed links
             for i in range(len(path) - 1):
