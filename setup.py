@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='bjointsp',
-    version='2.3.0',
+    version='2.4.0',
     license='Apache 2.0',
     description='B-JointSP provides algorithms for joint scaling and placement of uni- or bidirectional network services',
     url='https://github.com/CN-UPB/B-JointSP',
@@ -12,7 +12,7 @@ setup(name='bjointsp',
     install_requires=[
         "networkx",
         "geopy",
-        "pyyaml",
+        "pyyaml"
     ],
     zip_safe=False,
     entry_points={
