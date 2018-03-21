@@ -8,7 +8,7 @@ from bjointsp.heuristic import shortest_paths as sp
 
 # prepare result-file based on scenario-file: in results-subdirectory, using scenario name + timestamp (+ seed + event)
 # heuristic results also add the seed and event number; MIP results can add repetition instead
-def create_result_file(network_file, subfolder, seed=None, seed_subfolder=False, obj=None):
+def create_result_file(input_files, subfolder, seed=None, seed_subfolder=False, obj=None):
     # create subfolder for current objective
     obj_folder = ""
     if obj is not None:
@@ -23,20 +23,22 @@ def create_result_file(network_file, subfolder, seed=None, seed_subfolder=False,
         elif obj == objective.DELAY:
             obj_folder = "/delay"
 
-    input_file = os.path.basename(network_file)
-    input_directory = os.path.dirname(network_file)
+    file_name = ""
+    # add basename of each input file to the output filename
+    for f in input_files:
+        if f is not None:
+            file_name += os.path.basename(f).split(".")[0] + "-"
     # put result in seed-subfolder
     if seed is not None and seed_subfolder:
-        result_directory = os.path.join(input_directory, "../results/" + subfolder + obj_folder + "/{}".format(seed))
+        result_directory = os.path.join("results/" + subfolder + obj_folder + "/{}".format(seed))
     else:
-        result_directory = os.path.join(input_directory, "../results/" + subfolder + obj_folder)
+        result_directory = os.path.join("results/" + subfolder + obj_folder)
     # add seed to result name
     if seed is None:
         seed = ""
     else:
         seed = "_{}".format(seed)
-    file_name = input_file.split(".")[0]
-    timestamp = datetime.now().strftime("_%Y-%m-%d_%H-%M-%S")
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     result_file = file_name + timestamp + seed + ".yaml"
     result_path = os.path.join(result_directory, result_file)
 
@@ -52,6 +54,7 @@ def save_heuristic_variables(result, changed_instances, instances, edges, nodes,
     for i in instances:
         vnf = {"name": i.component.name, "node": i.location, "image": i.component.config}
         result["placement"]["vnfs"].append(vnf)
+    result["metrics"]["num_instances"] = len(result["placement"]["vnfs"])
 
     for e in edges:
         vlink = {"src_vnf": e.source.component.name, "src_node": e.source.location,
@@ -86,10 +89,12 @@ def save_heuristic_variables(result, changed_instances, instances, edges, nodes,
     result["metrics"]["changed"] = []
     for i in changed_instances:
         result["metrics"]["changed"].append({"name": i.component.name, "node": i.location})
+    result["metrics"]["num_changed"] = len(result["metrics"]["changed"])
 
     # edge and link data rate, used links
     result["placement"]["flows"] = []
     result["metrics"]["delays"] = []
+    result["metrics"]["total_delay"] = 0
     result["placement"]["links"] = []
     consumed_dr = defaultdict(int)		# default = 0
     for e in edges:
@@ -100,6 +105,7 @@ def save_heuristic_variables(result, changed_instances, instances, edges, nodes,
             # record edge delay: all flows take the same (shortest) path => take path delay
             delay = {"src": e.arc.source.name, "dest": e.arc.dest.name, "src_node": e.source.location, "dest_node": e.dest.location, "delay": sp.path_delay(links, path)}
             result["metrics"]["delays"].append(delay)
+            result["metrics"]["total_delay"] += sp.path_delay(links, path)
 
             # go through nodes of each path and increase the dr of the traversed links
             for i in range(len(path) - 1):
@@ -123,7 +129,7 @@ def save_heuristic_variables(result, changed_instances, instances, edges, nodes,
 
 
 def write_heuristic_result(runtime, obj_value, changed, overlays, input_files, obj, nodes, links, seed, seed_subfolder):
-    result_file = create_result_file(input_files[0], "heuristic", seed=seed, seed_subfolder=seed_subfolder, obj=obj)
+    result_file = create_result_file(input_files, "heuristic", seed=seed, seed_subfolder=seed_subfolder, obj=obj)
 
     instances, edges = set(), set()
     for ol in overlays:
@@ -131,7 +137,7 @@ def write_heuristic_result(runtime, obj_value, changed, overlays, input_files, o
         edges.update(ol.edges)
 
     # construct result as dictionary for writing into YAML result file
-    result = {"time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+    result = {"time": datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
               "input": {"network": os.path.basename(input_files[0]),
                         "service": os.path.basename(input_files[1]),
                         "sources": os.path.basename(input_files[2]),
