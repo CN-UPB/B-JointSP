@@ -4,6 +4,7 @@ from collections import defaultdict
 from datetime import datetime
 import bjointsp.objective as objective
 from bjointsp.heuristic import shortest_paths as sp
+import networkx as nx
 
 
 # prepare result-file based on scenario-file: in results-subdirectory, using scenario name + timestamp (+ seed + event)
@@ -146,6 +147,17 @@ def write_heuristic_result(runtime, obj_value, changed, overlays, input_files, o
                         "objective": obj},
               "metrics": {"runtime": runtime,
                           "obj_value": obj_value}}
+
+    # add input details to simplify evaluation: network size, etc
+    network = nx.read_graphml(input_files[0])
+    result["input"]["num_nodes"] = network.number_of_nodes()
+    result["input"]["num_edges"] = network.number_of_edges()
+    with open(input_files[1]) as f:
+        service = yaml.load(f)
+        result["input"]["num_vnfs"] = len(service["vnfs"])
+    with open(input_files[2]) as f:
+        sources = yaml.load(f)
+        result["input"]["num_sources"] = len(sources)
 
     result = save_heuristic_variables(result, changed, instances, edges, nodes, links)
 
