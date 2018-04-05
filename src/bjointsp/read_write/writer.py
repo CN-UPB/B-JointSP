@@ -10,20 +10,6 @@ import networkx as nx
 # prepare result-file based on scenario-file: in results-subdirectory, using scenario name + timestamp (+ seed + event)
 # heuristic results also add the seed and event number; MIP results can add repetition instead
 def create_result_file(input_files, subfolder, seed=None, seed_subfolder=False, obj=None):
-    # create subfolder for current objective
-    obj_folder = ""
-    if obj is not None:
-        if obj == objective.COMBINED:
-            obj_folder = "/combined"
-        elif obj == objective.OVER_SUB:
-            obj_folder = "/over-sub"
-        elif obj == objective.CHANGED:
-            obj_folder = "/changed"
-        elif obj == objective.RESOURCES:
-            obj_folder = "/resources"
-        elif obj == objective.DELAY:
-            obj_folder = "/delay"
-
     file_name = ""
     # add basename of each input file to the output filename
     for f in input_files:
@@ -31,9 +17,9 @@ def create_result_file(input_files, subfolder, seed=None, seed_subfolder=False, 
             file_name += os.path.basename(f).split(".")[0] + "-"
     # put result in seed-subfolder
     if seed is not None and seed_subfolder:
-        result_directory = os.path.join("results/" + subfolder + obj_folder + "/{}".format(seed))
+        result_directory = os.path.join("results/" + subfolder + "/{}".format(seed))
     else:
-        result_directory = os.path.join("results/" + subfolder + obj_folder)
+        result_directory = os.path.join("results/" + subfolder)
     # add seed to result name
     if seed is None:
         seed = ""
@@ -130,7 +116,7 @@ def save_heuristic_variables(result, changed_instances, instances, edges, nodes,
 
 
 def write_heuristic_result(runtime, obj_value, changed, overlays, input_files, obj, nodes, links, seed, seed_subfolder):
-    result_file = create_result_file(input_files, "heuristic", seed=seed, seed_subfolder=seed_subfolder, obj=obj)
+    result_file = create_result_file(input_files, "bjointsp", seed=seed, seed_subfolder=seed_subfolder, obj=obj)
 
     instances, edges = set(), set()
     for ol in overlays:
