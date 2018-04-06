@@ -129,7 +129,7 @@ def write_heuristic_result(runtime, obj_value, changed, overlays, input_files, o
                         "service": os.path.basename(input_files[1]),
                         "sources": os.path.basename(input_files[2]),
                         "seed": seed,
-                        "model": "bjointsp-heuristic",
+                        "algorithm": "bjointsp",
                         "objective": obj},
               "metrics": {"runtime": runtime,
                           "obj_value": obj_value}}
