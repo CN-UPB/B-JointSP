@@ -1,6 +1,6 @@
-import csv
 import networkx as nx
 import yaml
+import numpy as np
 from geopy.distance import vincenty
 from bjointsp.fixed.fixed_instance import FixedInstance
 from bjointsp.fixed.source import Source
@@ -85,7 +85,8 @@ def read_network(file, cpu, mem, dr):
         n2_lat, n2_long = n2.get("Latitude"), n2.get("Longitude")
         distance = vincenty((n1_lat, n1_long), (n2_lat, n2_long)).meters		# in meters
         delay = (distance / SPEED_OF_LIGHT * 1000) * PROPAGATION_FACTOR  		# in milliseconds
-        link_delay[("pop{}".format(e[0]), "pop{}".format(e[1]))] = round(delay)
+        # round delay to int using np.around for consistency with emulator
+        link_delay[("pop{}".format(e[0]), "pop{}".format(e[1]))] = np.around(delay)
 
     # add reversed links for bidirectionality
     for e in network.edges:
