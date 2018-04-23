@@ -162,30 +162,30 @@ def solve(arg_nodes, arg_links, templates, prev_overlays, sources, fixed, arg_ob
     print("Templates sorted to start with heaviest:", *templates, sep=" ")
 
     # initial solution
-    print("\n----- Initial solution -----")
+    #print("\n----- Initial solution -----")
     logging.info("----- Initial solution -----")
     overlays = heuristic.solve(arg_nodes, arg_links, templates, prev_overlays, sources, fixed, shortest_paths)
     obj_value = objective_value(overlays)
-    print("Objective value of initial solution: {}".format(obj_value))
-    print("Runtime for initial solution: {}".format(time.time() - start_heuristic))
+    #print("Objective value of initial solution: {}".format(obj_value))
+    #print("Runtime for initial solution: {}".format(time.time() - start_heuristic))
     logging.info("Objective value of initial solution: {}".format(obj_value))
     logging.info("Runtime for initial solution: {}\n".format(time.time() - start_heuristic))
 
 
     # iterative improvement
     if len(nodes.ids) > 1:		# doesn't work for networks with just 1 node
-        print("\n----- Iterative improvement -----")
+        #print("\n----- Iterative improvement -----")
         logging.info("----- Iterative improvement -----")
         overlays = improvement.improve(arg_nodes, arg_links, templates, overlays, sources, fixed, shortest_paths)
-        obj_value = objective_value(overlays, True)
+        obj_value = objective_value(overlays)
         runtime = time.time() - start_heuristic
-        print("Objective value after improvement: {}".format(obj_value))
-        print("Heuristic runtime: {}s".format(runtime))
+        #print("Objective value after improvement: {}".format(obj_value))
+        #print("Heuristic runtime: {}s".format(runtime))
         logging.info("Objective value after improvement: {}".format(obj_value))
         logging.info("Heuristic runtime: {}s".format(runtime))
     else:
         runtime = time.time() - start_heuristic
-        print("Skip iterative improvement for network with just 1 node")
+        #print("Skip iterative improvement for network with just 1 node")
         logging.info("Skip iterative improvement for network with just 1 node")
 
     # calculate changed instances for writing result

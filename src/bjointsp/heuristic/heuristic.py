@@ -42,7 +42,7 @@ def remove_instance(instance, overlay=None):
 
         if instance in ol.instances:
             ol.instances = [i for i in ol.instances if i != instance]
-            print("\tRemoved instance {} from overlay of {}".format(instance, ol.template))
+            #print("\tRemoved instance {} from overlay of {}".format(instance, ol.template))
             logging.info("\tRemoved instance {} from overlay of {}".format(instance, ol.template))
 
         edges_to_remove = [e for e in ol.edges if e.source == instance or e.dest == instance]
@@ -63,13 +63,13 @@ def remove_edge(edge, overlay=None):
             for i in ol.instances:
                 i.edges_in = {key: e for key, e in i.edges_in.items() if e != edge}
                 i.edges_out = {key: e for key, e in i.edges_out.items() if e != edge}
-    print("\tRemoved edge {}".format(edge))
+    #print("\tRemoved edge {}".format(edge))
     logging.info("\tRemoved edge {}".format(edge))
 
 
 # remove specified flow: remove mapping from/to edges, remove edges that are now "empty" (without mapped flows)
 def remove_flow(overlay, flow):
-    print("Removing outdated flow {} and corresponding edges (without other flows)".format(flow))
+    #print("Removing outdated flow {} and corresponding edges (without other flows)".format(flow))
     logging.info("Removing outdated flow {} and corresponding edges (without other flows)".format(flow))
     for e in list(overlay.edges):		# iterate over copy as edges are removed during loop
         # remove mappings
@@ -130,15 +130,15 @@ def candidate_nodes(start_node, arc, delta_dr, tabu=set()):
 def find_best_node(overlay, start_location, arc, delta_dr, fixed, tabu):
     # candidate nodes with enough remaining node capacity
     candidates = candidate_nodes(start_location, arc, delta_dr, tabu)
-    print("\tCandidate nodes for component {}:".format(arc.dest))
+    #print("\tCandidate nodes for component {}:".format(arc.dest))
     logging.debug("\tCandidate nodes for component {}:".format(arc.dest))
     for v in candidates.keys():
-        print("\t\t{} with {}".format(v, candidates[v]))
+        #print("\t\t{} with {}".format(v, candidates[v]))
         logging.debug("\t\t{} with {}".format(v, candidates[v]))
 
     # fixed instances need special treatment: cannot be added or removed => enforce reuse
     if fixed:
-        print("Component {} has fixed instances, which have to be used (no new instances allowed)".format(arc.dest))
+        #print("Component {} has fixed instances, which have to be used (no new instances allowed)".format(arc.dest))
         logging.info("Component {} has fixed instances, which have to be used (no new instances allowed)".format(arc.dest))
         fixed_nodes = [i.location for i in overlay.instances if i.component == arc.dest and
                        shortest_paths[(start_location, i.location)][2] <= arc.max_delay]
@@ -153,7 +153,7 @@ def find_best_node(overlay, start_location, arc, delta_dr, fixed, tabu):
 
     # if no nodes have remaining capacity, choose node with lowest over-subscription (within delay bounds)
     else:
-        print("No nodes with enough remaining resources. Choosing node with lowest over-subscription.")
+        #print("No nodes with enough remaining resources. Choosing node with lowest over-subscription.")
         logging.info("No nodes enough remaining resources. Choosing node with lowest over-subscription.")
         consumed_cpu, consumed_mem = consumed_node_resources()
         best_node = None
@@ -200,7 +200,7 @@ def map_flow2edge(overlay, start_instance, arc, flow, flow_dr, tabu):
     if not instance_exists:
         dest_instance = Instance(arc.dest, best_node)
         overlay.instances.append(dest_instance)
-        print("\tAdded new instance {} at best node {} (may exist in other overlays)".format(dest_instance, best_node))
+        #print("\tAdded new instance {} at best node {} (may exist in other overlays)".format(dest_instance, best_node))
         logging.info("\tAdded new instance {} at best node {} (may exist in other overlays)".format(dest_instance, best_node))
 
     # check if edge to dest_instance already exists
@@ -219,7 +219,7 @@ def map_flow2edge(overlay, start_instance, arc, flow, flow_dr, tabu):
     # map flow to edge
     flow.dr[edge] = flow_dr
     edge.flows.append(flow)
-    print("\tMapped flow {} (dr {}) to edge {} (new: {})".format(flow, flow_dr, edge, not edge_exists))
+    #print("\tMapped flow {} (dr {}) to edge {} (new: {})".format(flow, flow_dr, edge, not edge_exists))
     logging.info("\tMapped flow {} (dr {}) to edge {} (new: {})".format(flow, flow_dr, edge, not edge_exists))
 
 
@@ -243,7 +243,7 @@ def map_flows2stateful(overlay, start_instance, arc, out_flows):
             overlay.edges.append(edge)
         f.dr[edge] = out_flows[f]
         edge.flows.append(f)
-        print("\tMapped flow {} (dr {}) to edge {} (new: {}) back to same stateful instance".format(f, out_flows[f], edge, new_edge))
+        #print("\tMapped flow {} (dr {}) to edge {} (new: {}) back to same stateful instance".format(f, out_flows[f], edge, new_edge))
         logging.info("\tMapped flow {} (dr {}) to edge {} (new: {}) back to same stateful instance".format(f, out_flows[f], edge, new_edge))
 
 
@@ -257,7 +257,7 @@ def update_flow_mapping(overlay, start_instance, arc, out_flows, tabu):
             del f.dr[flow_mapping[f]]
             flow_mapping[f].flows.remove(f)
             del flow_mapping[f]
-            print("\tRemoved outdated flow {} along {}".format(f, arc))
+            #print("\tRemoved outdated flow {} along {}".format(f, arc))
 
     # enforce return of flows to the same stateful instances as passed in fwd direction
     if arc.dest.stateful and arc.direction == "backward":
@@ -271,7 +271,7 @@ def update_flow_mapping(overlay, start_instance, arc, out_flows, tabu):
         for f in ordered_flows:		# sort according to flow.id to ensure determinism
             if f in flow_mapping:
                 f.dr[flow_mapping[f]] = out_flows[f]		# update data rate
-                print("\tUpdated dr of existing flow {} (Now: {})".format(f, f.dr[flow_mapping[f]]))
+                #print("\tUpdated dr of existing flow {} (Now: {})".format(f, f.dr[flow_mapping[f]]))
                 # FUTURE WORK: maybe check if capacitiy violated => if yes, reassign flow to different edge; but might also be fixed during iterative improvement
             else:
                 map_flow2edge(overlay, start_instance, arc, f, out_flows[f], tabu)
@@ -280,7 +280,7 @@ def update_flow_mapping(overlay, start_instance, arc, out_flows, tabu):
     # remove empty edges
     for e in start_instance.edges_out.values():
         if e.arc == arc and not e.flows:
-            print("\nRemoved empty edge {}".format(e))
+            #print("\nRemoved empty edge {}".format(e))
             logging.info("\nRemoved empty edge {}".format(e))
             remove_edge(e, overlay)
 
@@ -288,7 +288,7 @@ def update_flow_mapping(overlay, start_instance, arc, out_flows, tabu):
 # update sources (add, rem), update source flows, reset passed_stateful of all flows
 def update_sources(overlay, sources):
     # reset passed_stateful for all flows (set up to date later) and remove outdated flows
-    print("Reset passed_stateful for all flows of template {}".format(overlay.template))
+    #print("Reset passed_stateful for all flows of template {}".format(overlay.template))
     src_flows = {f for src in sources for f in src.flows}
     mapped_flows = {f for e in overlay.edges for f in e.flows} | {f for src in sources for f in src.flows}
     for f in mapped_flows:
@@ -327,12 +327,12 @@ def update_sources(overlay, sources):
                 else:
                     i.src_flows.append(f)
                 f.passed_stateful[i.component] = i
-            print("Updated/checked src_flows of existing source instance {}".format(i))
+            #print("Updated/checked src_flows of existing source instance {}".format(i))
             logging.info("Updated/checked src_flows of existing source instance {}".format(i))
         else:
             src_instance = Instance(src.component, src.location, src.flows)
             overlay.instances.append(src_instance)
-            print("Added new source instance {}".format(src_instance))
+            #print("Added new source instance {}".format(src_instance))
             logging.info("Added new source instance {}".format(src_instance))
 
     # remove old source instances without source
@@ -340,20 +340,20 @@ def update_sources(overlay, sources):
     for src in source_instances:
         corresponding_sources = {s for s in sources if s.component == src.component and s.location == src.location}
         if len(corresponding_sources) == 0:
-            print("Remove source instance {} without corresponding source".format(src))
+            #print("Remove source instance {} without corresponding source".format(src))
             logging.info("Remove source instance {} without corresponding source".format(src))
             remove_instance(src)
 
 
 # create an initial solution for the provided input
 def solve(arg_nodes, arg_links, templates, prev_overlays, sources, fixed, arg_shortest_paths, tabu=set()):
-    print("Previous overlays:")
-    for ol in prev_overlays.values():
-        ol.print()
-    tabu_string = ""
-    for i in tabu:
-        tabu_string += "({},{}) ".format(i[0], i[1])
-        print("Tabu list: {}".format(tabu_string))
+    # print("Previous overlays:")
+    # for ol in prev_overlays.values():
+    #     ol.print()
+    # tabu_string = ""
+    # for i in tabu:
+    #     tabu_string += "({},{}) ".format(i[0], i[1])
+    #     print("Tabu list: {}".format(tabu_string))
 
     # write global variables
     global nodes, links, shortest_paths, overlays
@@ -368,19 +368,19 @@ def solve(arg_nodes, arg_links, templates, prev_overlays, sources, fixed, arg_sh
     for t in templates:
         if t not in overlays.keys():
             overlays[t] = Overlay(t, [], [])
-            print("Created empty overlay for new template {}".format(t))
+            #print("Created empty overlay for new template {}".format(t))
             logging.info("Created empty overlay for new template {}".format(t))
 
     # remove all instances of fixed components => curr fixed instances added again later; prev fixed instances removed
     fixed_components = {f.component for f in fixed}
     fixed_instances = {i for ol in overlays.values() for i in ol.instances if i.component in fixed_components}
-    print("Remove any existing fixed instances:", *fixed_instances, sep=" ")
+    #print("Remove any existing fixed instances:", *fixed_instances, sep=" ")
     for i in fixed_instances:
         remove_instance(i)
 
     # embed templates sequentially in given order
     for t in templates:
-        print("\n-Embedding template: {}-".format(t))
+        #print("\n-Embedding template: {}-".format(t))
         logging.info("-Embedding template: {}-".format(t))
 
         own_sources = [src for src in sources if src.component in t.components]
@@ -392,7 +392,7 @@ def solve(arg_nodes, arg_links, templates, prev_overlays, sources, fixed, arg_sh
                 fixed_instance = Instance(f.component, f.location, fixed=True)
                 if fixed_instance not in overlays[t].instances:
                     overlays[t].instances.append(fixed_instance)
-                    print("Added fixed instance of {} at {}".format(f.component, f.location))
+                    #print("Added fixed instance of {} at {}".format(f.component, f.location))
                     logging.info("Added fixed instance of {} at {}".format(f.component, f.location))
 
         # iterate over all instances in topological order; start in forward direction then switch to backward
@@ -400,12 +400,12 @@ def solve(arg_nodes, arg_links, templates, prev_overlays, sources, fixed, arg_sh
         direction = "forward"
         while i < len(overlays[t].topological_order()):
             instance = overlays[t].topological_order()[i]
-            # print("Topological order:", *overlays[t].topological_order(), sep=" ")
+            # #print("Topological order:", *overlays[t].topological_order(), sep=" ")
 
             # remove unused instances (except fixed instances)
             if not instance.fixed:
                 if not instance.used(direction, overlays[t]):
-                    print("Removed unused instance {} from overlay of {}".format(instance, t))
+                    #print("Removed unused instance {} from overlay of {}".format(instance, t))
                     logging.info("Removed unused instance {} from overlay of {}".format(instance, t))
                     remove_instance(instance, overlays[t])
                     continue
@@ -420,24 +420,24 @@ def solve(arg_nodes, arg_links, templates, prev_overlays, sources, fixed, arg_sh
                 arc = out_arc(t, instance.component, k, direction)
                 # when a component is adapted for reuse, it has separate outputs for the arcs of different templates
                 if arc is None:			# for output k, this template has no arc => skip to next output
-                    print("{}'s outgoing arc at output {} in {} direction belongs to a different template. The output is skipped".format(instance, k, direction))
+                    #print("{}'s outgoing arc at output {} in {} direction belongs to a different template. The output is skipped".format(instance, k, direction))
                     logging.debug("{}'s outgoing arc at output {} in {} direction belongs to a different template. The output is skipped".format(instance, k, direction))
                     continue
 
                 update_flow_mapping(overlays[t], instance, arc, out_flows[k], tabu)
-                print("Updated the flow mapping along arc {} at {}\n".format(arc, instance))
+                #print("Updated the flow mapping along arc {} at {}\n".format(arc, instance))
                 logging.info("Updated the flow mapping along arc {} at {}\n".format(arc, instance))
 
             i += 1
 
-        print()
+        #print()
         if overlays[t].empty():
             del overlays[t]
-            print("Deleted empty overlay of {}".format(t))
+            #print("Deleted empty overlay of {}".format(t))
             logging.info("Deleted empty overlay of {}".format(t))
-        else:
-            overlays[t].print()
-            print("Topological order:", *overlays[t].topological_order(), sep=" ")
-        print()
+       # else:
+            #overlays[t].print()
+            #print("Topological order:", *overlays[t].topological_order(), sep=" ")
+        #print()
 
     return overlays
