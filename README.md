@@ -12,3 +12,33 @@ sudo python3 setup.py develop
 ```
 
 For some reason, `install` doesn't work...
+
+
+## Usage
+
+Type `bjointsp -h` for usage help. This should print:
+
+```
+usage: bjointsp [-h] -n NETWORK -t TEMPLATE -s SOURCES [-f FIXED]
+
+B-JointSP heuristic calculates an optimized placement
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -n NETWORK, --network NETWORK
+                        Network input file (.graphml)
+  -t TEMPLATE, --template TEMPLATE
+                        Template input file (.yaml)
+  -s SOURCES, --sources SOURCES
+                        Sources input file (.yaml)
+  -f FIXED, --fixed FIXED
+                        Fixed instances input file (.yaml)
+```
+
+As an example, you can try running the following command from the source root folder (were README.md is located):
+
+```
+bjointsp -n src/bjointsp/parameters/networks/Abilene.graphml -t src/bjointsp/p                                                                                                                                                                                            arameters/templates/fw1chain.yaml -s src/bjointsp/parameters/sources/source0.yam                                                                                                                                                                                               l
+```
+
+This should start the heuristic and create a result in the `results/bjointsp` directory in form of a yaml file.
