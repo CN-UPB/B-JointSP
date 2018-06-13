@@ -38,7 +38,7 @@ optional arguments:
 As an example, you can try running the following command from the source root folder (were README.md is located):
 
 ```
-bjointsp -n src/bjointsp/parameters/networks/Abilene.graphml -t src/bjointsp/p                                                                                                                                                                                            arameters/templates/fw1chain.yaml -s src/bjointsp/parameters/sources/source0.yam                                                                                                                                                                                               l
+bjointsp -n src/bjointsp/parameters/networks/Abilene.graphml -t src/bjointsp/parameters/templates/fw1chain.yaml -s src/bjointsp/parameters/sources/source0.yaml
 ```
 
 This should start the heuristic and create a result in the `results/bjointsp` directory in form of a yaml file.
