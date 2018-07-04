@@ -8,10 +8,8 @@ B-JointSP is an optimization problem focusing on the joint scaling and placement
 ## Setup
 
 ```
-sudo python3 setup.py develop
+sudo python3 setup.py install
 ```
-
-For some reason, `install` doesn't work...
 
 
 ## Usage

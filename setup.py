@@ -8,7 +8,7 @@ setup(name='bjointsp',
     author='Stefan Schneider',
     author_email='stefan.schneider@upb.de',
     package_dir={'':'src'},
-    packages=find_packages('bjointsp'),
+    packages=find_packages('src'),
     install_requires=[
         "networkx",
         "geopy",
