@@ -30,6 +30,7 @@ def place(network_file, template_file, source_file, fixed_file=None, prev_embedd
     prev_embedding = {}
     if prev_embedding_file is not None:
         prev_embedding = reader.read_prev_embedding(prev_embedding_file, templates)
+    # FIXME: previous embedding doesn't seem to have an influence!
 
     input_files = [network_file, template_file, source_file, fixed_file]    # TODO: include prev_embedding
     # TODO: support >1 template
@@ -61,12 +62,13 @@ def parse_args():
     parser.add_argument("-t", "--template", help="Template input file (.yaml)", required=True, default=None, dest="template")
     parser.add_argument("-s", "--sources", help="Sources input file (.yaml)", required=True, default=None, dest="sources")
     parser.add_argument("-f", "--fixed", help="Fixed instances input file (.yaml)", required=False, default=None, dest="fixed")
+    parser.add_argument("-p", "--prev", help="Previous embedding input file (.yaml)", required=False, default=None, dest="prev")
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
-    place(args.network, args.template, args.sources, fixed_file=args.fixed, cpu=10, mem=10, dr=50)
+    place(args.network, args.template, args.sources, fixed_file=args.fixed, prev_embedding_file=args.prev, cpu=10, mem=10, dr=50)
 
 
 if __name__ == '__main__':

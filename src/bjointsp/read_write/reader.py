@@ -174,9 +174,12 @@ def read_fixed_instances(file, components):
 
 # read previous embedding from yaml file
 def read_prev_embedding(file, templates):
+    # create empty overlays for all templates
     prev_embedding = {}         # dict: template -> overlay
-    instances = []
-    # TODO: how to know which VNF belongs to which template? how to create matching overlays?
+    for t in templates:
+        prev_embedding[t] = Overlay(t, [], [])
+
+       # TODO: how to know which VNF belongs to which template? how to create matching overlays?
 
     with open(file, "r") as f:
         yaml_file = yaml.load(f)
@@ -189,13 +192,14 @@ def read_prev_embedding(file, templates):
                 # use first matching component (assuming it's only in one template)
                 if vnf["name"] in [c.name for c in t.components]:
                     component = list(filter(lambda x: x.name == vnf["name"], t.components))[0]
+                    # add new instance to overlay of corresponding template
+                    # TODO: can I just take vnf[node] as location? and empty source flows?
+                    if component.source:
+                        prev_embedding[t].instances.append(Instance(component, vnf["node"], src_flows=[]))
+                    else:
+                        prev_embedding[t].instances.append(Instance(component, vnf["node"]))
                     break
-            if component is None:
-                raise ValueError("No matching component in given templates found for {}".format(vnf["name"]))
 
-            # TODO: can I just take vnf[node] as location?
-            instances.append(Instance(component, vnf["node"]))
-
-        # TODO: add edges, create overlay, add to prev_embedding
+        # TODO: add edges
 
     return prev_embedding
