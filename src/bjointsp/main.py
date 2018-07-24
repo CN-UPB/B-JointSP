@@ -16,7 +16,7 @@ obj = objective.COMBINED
 
 
 # solve with heuristic; interface to place-emu: triggers placement
-def place(network_file, template_file, source_file, fixed_file=None, cpu=None, mem=None, dr=None):
+def place(network_file, template_file, source_file, fixed_file=None, prev_embedding_file=None, cpu=None, mem=None, dr=None):
     nodes, links = reader.read_network(network_file, cpu, mem, dr)
     template, source_components = reader.read_template(template_file, return_src_components=True)
     templates = [template]
@@ -25,7 +25,13 @@ def place(network_file, template_file, source_file, fixed_file=None, cpu=None, m
     fixed = []
     if fixed_file is not None:
         fixed = reader.read_fixed_instances(fixed_file, components)
-    input_files = [network_file, template_file, source_file, fixed_file]
+
+    # TODO: read previous embedding
+    prev_embedding = {}
+    if prev_embedding_file is not None:
+        prev_embedding = reader.read_prev_embedding(prev_embedding_file, templates)
+
+    input_files = [network_file, template_file, source_file, fixed_file]    # TODO: include prev_embedding
     # TODO: support >1 template
 
     seed = random.randint(0, 9999)
@@ -43,7 +49,7 @@ def place(network_file, template_file, source_file, fixed_file=None, cpu=None, m
     logging.info("Starting initial embedding at {}".format(timestamp))
     print("Initial embedding\n")
     # TODO: make less verbose or only as verbose when asked for (eg, with -v argument)
-    init_time, runtime, obj_value, changed, overlays = control.solve(nodes, links, templates, {}, sources, fixed, obj)
+    init_time, runtime, obj_value, changed, overlays = control.solve(nodes, links, templates, prev_embedding, sources, fixed, obj)
     result = writer.write_heuristic_result(runtime, obj_value, changed, overlays.values(), input_files, obj, nodes, links, seed, seed_subfolder)
 
     return result

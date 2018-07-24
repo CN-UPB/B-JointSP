@@ -10,6 +10,8 @@ from bjointsp.overlay.flow import Flow
 from bjointsp.template.arc import Arc
 from bjointsp.template.component import Component
 from bjointsp.template.template import Template
+from bjointsp.overlay.overlay import Overlay
+from bjointsp.overlay.instance import Instance
 
 
 # remove empty values (from multiple delimiters in a row)
@@ -168,3 +170,32 @@ def read_fixed_instances(file, components):
 
             fixed_instances.append(FixedInstance(i["node"], component))
     return fixed_instances
+
+
+# read previous embedding from yaml file
+def read_prev_embedding(file, templates):
+    prev_embedding = {}         # dict: template -> overlay
+    instances = []
+    # TODO: how to know which VNF belongs to which template? how to create matching overlays?
+
+    with open(file, "r") as f:
+        yaml_file = yaml.load(f)
+
+        # read and create VNF instances of previous embedding
+        for vnf in yaml_file["placement"]["vnfs"]:
+            # find component that matches the VNF name (in any of the templates)
+            component = None
+            for t in templates:
+                # use first matching component (assuming it's only in one template)
+                if vnf["name"] in [c.name for c in t.components]:
+                    component = list(filter(lambda x: x.name == vnf["name"], t.components))[0]
+                    break
+            if component is None:
+                raise ValueError("No matching component in given templates found for {}".format(vnf["name"]))
+
+            # TODO: can I just take vnf[node] as location?
+            instances.append(Instance(component, vnf["node"]))
+
+        # TODO: add edges, create overlay, add to prev_embedding
+
+    return prev_embedding
