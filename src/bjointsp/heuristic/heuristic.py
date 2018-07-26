@@ -6,7 +6,6 @@ from collections import OrderedDict			# for deterministic behavior
 from bjointsp.overlay.edge import Edge
 from bjointsp.overlay.instance import Instance
 from bjointsp.overlay.overlay import Overlay
-import bjointsp.objective as objective
 
 # global variables for easy access by all functions
 nodes, links, shortest_paths, overlays = None, None, None, None

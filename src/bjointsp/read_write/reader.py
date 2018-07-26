@@ -12,6 +12,7 @@ from bjointsp.template.component import Component
 from bjointsp.template.template import Template
 from bjointsp.overlay.overlay import Overlay
 from bjointsp.overlay.instance import Instance
+from bjointsp.overlay.edge import Edge
 
 
 # remove empty values (from multiple delimiters in a row)
@@ -185,7 +186,6 @@ def read_prev_embedding(file, templates):
         # read and create VNF instances of previous embedding
         for vnf in yaml_file["placement"]["vnfs"]:
             # find component that matches the VNF name (in any of the templates)
-            component = None
             for t in templates:
                 # use first matching component (assuming it's only in one template)
                 if vnf["name"] in [c.name for c in t.components]:
@@ -197,6 +197,26 @@ def read_prev_embedding(file, templates):
                         prev_embedding[t].instances.append(Instance(component, vnf["node"]))
                     break
 
-        # TODO: add edges
+        # TODO: read and create flows. otherwise, adding edges really doesn't make a difference in the heuristic
+        # read and create edges of previous embedding
+        for edge in yaml_file["placement"]["vlinks"]:
+            instances = [i for ol in prev_embedding.values() for i in ol.instances]
+
+            # try to get source and dest instance from list of instances
+            try:
+                source = list(filter(lambda x: x.component.name == edge["src_vnf"] and x.location == edge["src_node"], instances))[0]
+                dest = list(filter(lambda x: x.component.name == edge["dest_vnf"] and x.location == edge["dest_node"], instances))[0]
+            # if the vnfs don't exist in prev_embedding (eg, through incorrect input), ignore the edge
+            except IndexError:
+                print("No matching VNFs in prev_embedding for edge from {} to {}. Ignoring the edge.".format(source, dest))
+                continue    # skip and continue with next edge
+
+            # get arc from templates by matching against source and dest components
+            for t in templates:
+                if source.component in t.components and dest.component in t.components:
+                    # assume t has an arc source->dest if both components are in t
+                    arc = list(filter(lambda x: x.source == source.component and x.dest == dest.component, t.arcs))[0]
+                    # add new edge to overlay of corresponding template
+                    prev_embedding[t].edges.append(Edge(arc, source, dest))
 
     return prev_embedding

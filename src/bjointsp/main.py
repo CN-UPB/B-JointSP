@@ -25,8 +25,6 @@ def place(network_file, template_file, source_file, fixed_file=None, prev_embedd
     fixed = []
     if fixed_file is not None:
         fixed = reader.read_fixed_instances(fixed_file, components)
-
-    # TODO: read previous embedding
     prev_embedding = {}
     if prev_embedding_file is not None:
         prev_embedding = reader.read_prev_embedding(prev_embedding_file, templates)
