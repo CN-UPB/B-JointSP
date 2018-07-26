@@ -4,7 +4,7 @@ B-JointSP is an optimization problem focusing on the *joint scaling and placemen
 
 This repository provides the source code for an optimization approach formulated as MIP that can be linearized as MILP and solved with Gurobi. We also provide a fast heuristic algorithm.
 
-*This branch contains the source code belonging to the original implementation of B-JointSP for IEEE NetSoft 2018. It contains both the MIP and the heuristic implementation. The master branch contains updated, easier to use version that only includes the heuristic.*
+*This branch contains the source code belonging to the original implementation of B-JointSP for IEEE NetSoft 2018 (also see the corresponding [GitHub release](https://github.com/CN-UPB/B-JointSP/releases/tag/v1.0)). It contains both the MIP and the heuristic implementation. The master branch contains updated, easier to use version that only includes the heuristic.*
 
 ## Installation requirements
 
