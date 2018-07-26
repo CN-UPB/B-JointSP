@@ -1,13 +1,17 @@
 # B-JointSP 
 
-B-JointSP is an optimization problem focusing on the joint scaling and placement (called embedding) of NFV network services, consisting of interconnected virtual network functions (VNFs). The exceptional about B-JointSP is its consideration of realistic, bidirectional network services, in which flows return to their sources. It even supports stateful VNFs, that need to be traversed by the same flows in both upstream and downstream direction. Furthermore, B-JointSP allows the reuse of VNFs across different network services and supports physical network functions.
+B-JointSP is an optimization problem focusing on the *joint scaling and placement* (called embedding) of NFV network services, consisting of interconnected virtual network functions (VNFs). The exceptional about B-JointSP is its consideration of *realistic, bidirectional network services*, in which flows return to their sources. It even supports *stateful VNFs*, that need to be traversed by the same flows in both upstream and downstream direction. Furthermore, B-JointSP allows the reuse of VNFs across different network services and supports physical network functions.
 
 This repository provides the source code for an optimization approach formulated as MIP that can be linearized as MILP and solved with Gurobi. We also provide a fast heuristic algorithm.
+
+*This branch contains the source code belonging to the original implementation of B-JointSP for IEEE NetSoft 2018. It contains both the MIP and the heuristic implementation. The master branch contains updated, easier to use version that only includes the heuristic.*
 
 ## Installation requirements
 
 * [Python 3.5](https://www.python.org/)
 * [Gurobi 7.0](http://www.gurobi.com/) and [gurobipy](http://www.gurobi.com/documentation/6.5/quickstart_mac/the_gurobi_python_interfac.html) for the optimization approach
+
+*Use the master branch with out the MIP (just heuristic) to avoid the gurobipy dependency and easier installation and usage.*
 
 ## Usage/Execution
 
