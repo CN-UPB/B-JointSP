@@ -29,7 +29,7 @@ def place(network_file, template_file, source_file, fixed_file=None, prev_embedd
     if prev_embedding_file is not None:
         prev_embedding = reader.read_prev_embedding(prev_embedding_file, templates)
 
-    input_files = [network_file, template_file, source_file, fixed_file]    # TODO: include prev_embedding
+    input_files = [network_file, template_file, source_file, fixed_file, prev_embedding_file]
     # TODO: support >1 template
 
     seed = random.randint(0, 9999)
