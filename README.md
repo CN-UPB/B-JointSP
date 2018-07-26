@@ -1,8 +1,8 @@
 # B-JointSP 
 
-**Note: This branch is for ongoing development for another project. It's not thoroughly tested and may be unstable. For the NetSoft'18 submission, please only consider the master branch. This branch only includes the heuristic, not the MIP.**
+B-JointSP is an optimization problem focusing on the *joint scaling and placemen*t (called embedding) of NFV network services, consisting of interconnected virtual network functions (VNFs). The exceptional about B-JointSP is its consideration of *realistic, bidirectional network services*, in which flows return to their sources. It even supports *stateful VNFs*, that need to be traversed by the same flows in both upstream and downstream direction. Furthermore, B-JointSP allows the reuse of VNFs across different network services and supports physical network functions.
 
-B-JointSP is an optimization problem focusing on the joint scaling and placement (called embedding) of NFV network services, consisting of interconnected virtual network functions (VNFs). The exceptional about B-JointSP is its consideration of realistic, bidirectional network services, in which flows return to their sources. It even supports stateful VNFs, that need to be traversed by the same flows in both upstream and downstream direction. Furthermore, B-JointSP allows the reuse of VNFs across different network services and supports physical network functions.
+*Note: For the source code originally implemented and submitted to IEEE NetSoft 2018, refer to the corresponding [release](https://github.com/CN-UPB/B-JointSP/releases/tag/v1.0) or [branch](https://github.com/CN-UPB/B-JointSP/tree/netsoft2018). This branch contains only the heuristic, not the MIP, and is greatly extended compared to the original code.*
 
 
 ## Setup
@@ -32,6 +32,8 @@ optional arguments:
                         Sources input file (.yaml)
   -f FIXED, --fixed FIXED
                         Fixed instances input file (.yaml)
+  -p PREV_EMBEDDING, --prev PREV_EMBEDDING
+                        Previous embedding input file (.yaml)                     
 ```
 
 As an example, you can try running the following command from the source root folder (were README.md is located):
@@ -41,3 +43,9 @@ bjointsp -n src/bjointsp/parameters/networks/Abilene.graphml -t src/bjointsp/par
 ```
 
 This should start the heuristic and create a result in the `results/bjointsp` directory in form of a yaml file.
+
+## Contact
+
+Lead developer: Stefan Schneider (@StefanUPB)
+
+For questions or support, please use GitHub's issue system.
