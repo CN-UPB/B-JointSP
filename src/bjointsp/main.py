@@ -30,7 +30,6 @@ def place(network_file, template_file, source_file, fixed_file=None, prev_embedd
     prev_embedding = {}
     if prev_embedding_file is not None:
         prev_embedding = reader.read_prev_embedding(prev_embedding_file, templates)
-    # FIXME: previous embedding doesn't seem to have an influence!
 
     input_files = [network_file, template_file, source_file, fixed_file]    # TODO: include prev_embedding
     # TODO: support >1 template

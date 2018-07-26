@@ -127,6 +127,7 @@ def candidate_nodes(start_node, arc, delta_dr, tabu=set()):
 
 
 # return the best node to create an edge to (from a given location, along a given arc, excluding the tabu-instance)
+# FUTURE WORK: favor nodes with suitable instances -> encourage reuse of existing instances -> better objective 2
 def find_best_node(overlay, start_location, arc, delta_dr, fixed, tabu):
     # candidate nodes with enough remaining node capacity
     candidates = candidate_nodes(start_location, arc, delta_dr, tabu)

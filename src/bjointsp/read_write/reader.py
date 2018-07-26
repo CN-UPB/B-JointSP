@@ -179,8 +179,6 @@ def read_prev_embedding(file, templates):
     for t in templates:
         prev_embedding[t] = Overlay(t, [], [])
 
-       # TODO: how to know which VNF belongs to which template? how to create matching overlays?
-
     with open(file, "r") as f:
         yaml_file = yaml.load(f)
 
@@ -192,8 +190,7 @@ def read_prev_embedding(file, templates):
                 # use first matching component (assuming it's only in one template)
                 if vnf["name"] in [c.name for c in t.components]:
                     component = list(filter(lambda x: x.name == vnf["name"], t.components))[0]
-                    # add new instance to overlay of corresponding template
-                    # TODO: can I just take vnf[node] as location? and empty source flows?
+                    # add new instance to overlay of corresponding template (source components need src_flows being set)
                     if component.source:
                         prev_embedding[t].instances.append(Instance(component, vnf["node"], src_flows=[]))
                     else:

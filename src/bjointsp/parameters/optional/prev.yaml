@@ -75,7 +75,7 @@ placement:
   vnfs:
   - image: '{"image":"placement-apache-img", "network":"(id=input,ip=99.0.0.2/24)"}'
     name: vnf_web
-    node: pop1
+    node: pop2
   - image: '{"image":"placement-fw1-img", "network":"(id=input,ip=88.0.0.2/24),(id=output,ip=99.0.0.1/24)"}'
     name: vnf_fw1
     node: pop0
