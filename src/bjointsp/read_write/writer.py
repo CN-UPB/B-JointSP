@@ -128,11 +128,19 @@ def write_heuristic_result(runtime, obj_value, changed, overlays, input_files, o
               "input": {"network": os.path.basename(input_files[0]),
                         "service": os.path.basename(input_files[1]),
                         "sources": os.path.basename(input_files[2]),
+                        "fixed": "None",
+                        "prev_embedding": "None",
                         "seed": seed,
                         "algorithm": "bjointsp",
                         "objective": obj},
               "metrics": {"runtime": runtime,
                           "obj_value": obj_value}}
+
+    # set file of fixed instances and of previous embedding if they are specified
+    if input_files[3] is not None:
+        result["input"]["fixed"] = os.path.basename(input_files[3])
+    if input_files[4] is not None:
+        result["input"]["prev_embedding"] = os.path.basename(input_files[4])
 
     # add input details to simplify evaluation: network size, etc
     network = nx.read_graphml(input_files[0])
