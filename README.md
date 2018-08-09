@@ -2,7 +2,13 @@
 
 B-JointSP is an optimization problem focusing on the *joint scaling and placemen*t (called embedding) of NFV network services, consisting of interconnected virtual network functions (VNFs). The exceptional about B-JointSP is its consideration of *realistic, bidirectional network services*, in which flows return to their sources. It even supports *stateful VNFs*, that need to be traversed by the same flows in both upstream and downstream direction. Furthermore, B-JointSP allows the reuse of VNFs across different network services and supports physical network functions.
 
-*Note: For the source code originally implemented and submitted to IEEE NetSoft 2018, refer to the corresponding [release](https://github.com/CN-UPB/B-JointSP/releases/tag/v1.0) or [branch](https://github.com/CN-UPB/B-JointSP/tree/netsoft2018). This branch contains only the heuristic, not the MIP, and is greatly extended compared to the original code.*
+### Cite this work
+
+If you use B-JointSP in your research, please cite our work:
+
+> Sevil Dräxler, Stefan Schneider, Holger Karl: "Scaling and Placing Bidirectional Services with Stateful Virtual and Physical Network Functions". IEEE Conference on Network Softwarization (NetSoft), Montreal, CA (2018)
+
+*Note: For the source code originally implemented and submitted to IEEE NetSoft 2018, refer to the corresponding [release](https://github.com/CN-UPB/B-JointSP/releases/tag/v1.0) or [branch](https://github.com/CN-UPB/B-JointSP/tree/netsoft2018). The master branch contains only the heuristic, not the MIP, and is greatly extended compared to the original code.*
 
 
 ## Setup
