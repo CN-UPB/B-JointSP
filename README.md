@@ -8,7 +8,7 @@ B-JointSP is an optimization problem focusing on the *joint scaling and placemen
 
 If you use B-JointSP in your research, please cite our work:
 
-> Sevil Dräxler, Stefan Schneider, Holger Karl: "Scaling and Placing Bidirectional Services with Stateful Virtual and Physical Network Functions". IEEE Conference on Network Softwarization (NetSoft), Montreal, CA (2018)
+> Sevil Dräxler, Stefan Schneider, Holger Karl: "[Scaling and Placing Bidirectional Services with Stateful Virtual and Physical Network Functions](https://ieeexplore.ieee.org/document/8459915/)". IEEE Conference on Network Softwarization (NetSoft), Montreal, CA (2018)
 
 *Note: For the source code originally implemented and submitted to IEEE NetSoft 2018, refer to the corresponding [release](https://github.com/CN-UPB/B-JointSP/releases/tag/v1.0) or [branch](https://github.com/CN-UPB/B-JointSP/tree/netsoft2018). The master branch contains only the heuristic, not the MIP, and is greatly extended compared to the original code.*
 
