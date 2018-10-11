@@ -1,0 +1,13 @@
+# 2 sources: one at pop0, one at pop4 (east and west coast)
+
+- node: pop0
+  vnf: vnf_user
+  flows:
+    - id: f1
+      data_rate: 1
+- node: pop4
+  vnf: vnf_user
+  flows:
+    - id: f2
+      data_rate: 1
+      

@@ -1,0 +1,91 @@
+# example chain template: User -> fw3 -> fw2 -> fw1 -> Web
+name: fw3-chain
+vnfs:
+  - name: vnf_user
+    type: source
+    stateful: True
+    inputs_fwd: 0
+    inputs_bwd: 0
+    outputs_fwd: 1
+    outputs_bwd: 0
+    cpu: [1]
+    mem: [1]
+    out_fwd: []
+    out_bwd: []
+    image: '{"image":"placement-user-img", "network":"(id=output,ip=66.0.0.1/24)"}'
+  - name: vnf_fw3
+    type: normal
+    stateful: False
+    inputs_fwd: 1
+    inputs_bwd: 0
+    outputs_fwd: 1
+    outputs_bwd: 0
+    cpu: [1,0]
+    mem: [1,0]
+    out_fwd:
+      - [1,0]
+    out_bwd: []
+    image: '{"image":"placement-fw3-img", "network":"(id=input,ip=66.0.0.2/24),(id=output,ip=77.0.0.1/24)"}'
+  - name: vnf_fw2
+    type: normal
+    stateful: False
+    inputs_fwd: 1
+    inputs_bwd: 0
+    outputs_fwd: 1
+    outputs_bwd: 0
+    cpu: [1,0]
+    mem: [1,0]
+    out_fwd:
+      - [1,0]
+    out_bwd: []
+    image: '{"image":"placement-fw2-img", "network":"(id=input,ip=77.0.0.2/24),(id=output,ip=88.0.0.1/24)"}'
+  - name: vnf_fw1
+    type: normal
+    stateful: False
+    inputs_fwd: 1
+    inputs_bwd: 0
+    outputs_fwd: 1
+    outputs_bwd: 0
+    cpu: [1,0]
+    mem: [1,0]
+    out_fwd:
+      - [1,0]
+    out_bwd: []
+    image: '{"image":"placement-fw1-img", "network":"(id=input,ip=88.0.0.2/24),(id=output,ip=99.0.0.1/24)"}'
+  - name: vnf_web
+    type: normal
+    stateful: False
+    inputs_fwd: 1
+    inputs_bwd: 0
+    outputs_fwd: 0
+    outputs_bwd: 0
+    cpu: [1,0]
+    mem: [1,0]
+    out_fwd: []
+    out_bwd: []
+    image: '{"image":"placement-apache-img", "network":"(id=input,ip=99.0.0.2/24)"}'
+vlinks:
+  - direction: forward
+    src: vnf_user
+    src_output: 0
+    dest: vnf_fw3
+    dest_input: 0
+    max_delay: 50
+  - direction: forward
+    src: vnf_fw3
+    src_output: 0
+    dest: vnf_fw2
+    dest_input: 0
+    max_delay: 50
+  - direction: forward
+    src: vnf_fw2
+    src_output: 0
+    dest: vnf_fw1
+    dest_input: 0
+    max_delay: 50
+  - direction: forward
+    src: vnf_fw1
+    src_output: 0
+    dest: vnf_web
+    dest_input: 0
+    max_delay: 50
