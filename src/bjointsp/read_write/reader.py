@@ -113,11 +113,12 @@ def read_template(file, return_src_components=False):
             inputs = (vnf["inputs_fwd"], vnf["inputs_bwd"])
             outputs = (vnf["outputs_fwd"], vnf["outputs_bwd"])
             outgoing = (vnf["out_fwd"], vnf["out_bwd"])
-            print("PROC DELAY")
+            # print("PROC DELAY")
             # Getting the VNF delay from YAML, checking to see if key exists, otherwise set default 0
             vnf_delay = vnf.get("vnf_delay",0)
-
-            component = Component(vnf["name"], vnf["type"], vnf["stateful"], inputs, outputs, vnf["cpu"], vnf["mem"], outgoing, vnf["image"],vnf_delay)
+            # print(vnf_delay)
+            # exit()
+            component = Component(vnf["name"], vnf["type"], vnf["stateful"], inputs, outputs, vnf["cpu"], vnf["mem"], outgoing, vnf_delay, vnf["image"])
             components.append(component)
 
         for arc in template["vlinks"]:

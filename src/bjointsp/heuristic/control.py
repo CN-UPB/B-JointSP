@@ -158,7 +158,8 @@ def solve(arg_nodes, arg_links, templates, prev_overlays, sources, fixed, arg_ob
         src_drs[src.component] += src.total_flow_dr()
 
     # sort templates with decreasing weight: heaviest/most difficult templates get embedded first
-    templates.sort(key=lambda t: t.weight(src_drs[t.source()]), reverse=True)
+    # Modify 'False' in weight function call to True to weight vnf delays as well. 
+    templates.sort(key=lambda t: t.weight(src_drs[t.source()], False), reverse=True)
     print("Templates sorted to start with heaviest:", *templates, sep=" ")
 
     # initial solution

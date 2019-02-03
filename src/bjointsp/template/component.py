@@ -25,6 +25,8 @@ class Component:
         self.config = config		# config used by external apps/MANOs (describes image, ports, ...)
 
         total_inputs = self.inputs + self.inputs_back
+
+        # What is this used for? For every input we need a total of 1 CPU and 1 Mem? 
         if len(self.cpu) != total_inputs + 1: # always need idle consumption (can be 0)
             raise ValueError("Inputs and CPU function mismatch or missing idle consumption")
         if len(self.mem) != total_inputs + 1:
@@ -54,6 +56,10 @@ class Component:
 
     def __hash__(self):
         return hash((self.name))
+
+
+    def get_delay(self):
+        return self.vnf_delay
 
     def print(self):
         if self.source:
@@ -97,18 +103,18 @@ class Component:
             requirement += self.mem[i] * incoming[i]    # linear function
 
         return requirement
-    def delay_req(self, incoming, ignore_idle=None):
-        inputs = self.inputs + self.inputs_back
-        if len(incoming) != inputs:
-            raise ValueError("Mismatch of #incoming data rates and inputs")
+    # def delay_req(self, incoming, ignore_idle=None):
+    #     inputs = self.inputs + self.inputs_back
+    #     if len(incoming) != inputs:
+    #         raise ValueError("Mismatch of #incoming data rates and inputs")
 
-        requirement = self.delay[-1]  # idle consumption
-        if self == ignore_idle:
-            requirement = 0
-        for i in range(inputs):
-            requirement += self.delay[i] * incoming[i]    # linear function
+    #     requirement = self.delay[-1]  # idle consumption
+    #     if self == ignore_idle:
+    #         requirement = 0
+    #     for i in range(inputs):
+    #         requirement += self.delay[i] * incoming[i]    # linear function
 
-        return requirement
+    #     return requirement
 
     # outgoing data rate at specified output based on the incoming data rates
     def outgoing(self, in_vector, output):
