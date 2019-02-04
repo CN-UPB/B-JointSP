@@ -80,8 +80,10 @@ def save_heuristic_variables(result, changed_instances, instances, edges, nodes,
 
     # edge and link data rate, used links
     result["placement"]["flows"] = []
-    result["metrics"]["delays"] = []
-    result["metrics"]["total_delay"] = 0
+    result["metrics"]["path_delays"] = []
+    result["metrics"]["vnf_delays"] = []
+    result["metrics"]["total_path_delay"] = 0
+    result["metrics"]["total_vnf_delay"] = 0
     result["placement"]["links"] = []
     consumed_dr = defaultdict(int)		# default = 0
     for e in edges:
@@ -90,9 +92,9 @@ def save_heuristic_variables(result, changed_instances, instances, edges, nodes,
             result["placement"]["flows"].append(flow)
         for path in e.paths:
             # record edge delay: all flows take the same (shortest) path => take path delay
-            delay = {"src": e.arc.source.name, "dest": e.arc.dest.name, "src_node": e.source.location, "dest_node": e.dest.location, "path_delay": sp.path_delay(links, path), "src_vnf_delay": e.arc.source.vnf_delay, "dest_vnf_delay": e.arc.dest.vnf_delay }
-            result["metrics"]["delays"].append(delay)
-            result["metrics"]["total_delay"] += sp.path_delay(links, path)+e.arc.source.vnf_delay+e.arc.dest.vnf_delay
+            path_delay = {"src": e.arc.source.name, "dest": e.arc.dest.name, "src_node": e.source.location, "dest_node": e.dest.location, "path_delay": sp.path_delay(links, path)}
+            result["metrics"]["path_delays"].append(path_delay)
+            result["metrics"]["total_path_delay"] += sp.path_delay(links, path)
 
             # go through nodes of each path and increase the dr of the traversed links
             for i in range(len(path) - 1):
@@ -101,6 +103,12 @@ def save_heuristic_variables(result, changed_instances, instances, edges, nodes,
                     consumed_dr[(path[i], path[i+1])] += e.flow_dr() / len(e.paths)
                     link = {"arc": str(e.arc), "edge_src": e.source.location, "edge_dst": e.dest.location, "link_src": path[i], "link_dst": path[i+1]}
                     result["placement"]["links"].append(link)
+        for path in e.paths:
+            # record vnf delays
+            vnf_delay = {"dest_vnf": e.arc.dest.name, "dest_vnf_delay": e.arc.dest.vnf_delay }
+            result["metrics"]["vnf_delays"].append(vnf_delay)
+            result["metrics"]["total_vnf_delay"] += e.arc.dest.vnf_delay
+
 
     # link capacity violations
     result["placement"]["dr_oversub"] = []

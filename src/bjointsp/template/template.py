@@ -42,26 +42,18 @@ class Template:
         return None
 
     # weight = expected resource consumption based on total source data rate and components
-    def weight(self, src_dr, delay_calc=False):
+    def weight(self, src_dr):
         # outgoing data rate of specified component in specified direction and from specified output
         out_dr = {}
 
         # iterate over components in topological order, determine outgoing dr for each and store it in out_dr
         # first, consider only forward direction then only backward
         # also determine cpu/mem consumption per component and direction and increase total_cpu/mem accordingly
-        total_cpu, total_mem, total_delay = 0, 0, 0
+        total_cpu, total_mem = 0, 0, 
         topo_order = self.topological_component_order()
         direction = "forward"
         end_reached = False
         for j in topo_order:
-
-            # I calculate here the delay regardless of direction or whether src or end (total in both direction). Comments on this? 
-            # Will change placement result - adds VNF delay to weight (Check on correctness)
-            if(delay_calc):
-                vnf_delay = j.get_delay()
-                total_delay += vnf_delay
-
-
             
             if j.end:
                 end_reached = True
@@ -74,14 +66,6 @@ class Template:
                     out_dr[(j, direction, 0)] = src_dr
 
                 continue
-
-            # Alternative version calculating delay for forward or backward directions 
-
-            # if direction == "forward": 
-            #     total_delay += j.get_delay()
-
-            # if direction == "backward": 
-            #     total_delay += j.get_delay()
 
 
             # forward direction refers to the ingoing data rates and includes end components
@@ -106,7 +90,7 @@ class Template:
                 # resource consumption
                 cpu = j.cpu_req(in_dr_fwd + in_dr_bwd)
                 mem = j.mem_req(in_dr_fwd + in_dr_bwd)
-                #print(j.print())
+                
                 
                 total_cpu += cpu
                 total_mem += mem
@@ -146,27 +130,20 @@ class Template:
                 # resource consumption
                 cpu = j.cpu_req(in_dr_fwd + in_dr_bwd)
                 mem = j.mem_req(in_dr_fwd + in_dr_bwd)
-                # vnf_delay = j.get_delay()
                 total_cpu += cpu
                 total_mem += mem
-                # total_delay += vnf_delay
+               
 
                 # compute outgoing data rates and store them in the dictionary
                 out_drs = [j.outgoing_back(in_dr_bwd, k_out) for k_out in range(j.outputs_back)]
                 for k_out in range(j.outputs_back):
                     out_dr[(j, "backward", k_out)] = out_drs[k_out]
-            # print ("Total Delay BWD")
-            # print (total_delay)
 
-        # print ("Total Delay")
-        # print (total_delay)
         total_dr = sum(out_dr.values())
         print("{}'s weight: {}\n".format(self, total_cpu+total_mem+total_dr))
         
-        if(delay_calc):
-            return total_cpu + total_mem + total_dr + total_delay
-        else:
-            return total_cpu + total_mem + total_dr
+        
+        return total_cpu + total_mem + total_dr
 
     # start with source component and continue breadth-first style (first forward then backward direction)
     # FUTURE WORK: set as property/constant such that it only has to be computed once (eg, in init)
