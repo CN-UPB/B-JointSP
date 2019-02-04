@@ -90,7 +90,7 @@ def save_heuristic_variables(result, changed_instances, instances, edges, nodes,
             result["placement"]["flows"].append(flow)
         for path in e.paths:
             # record edge delay: all flows take the same (shortest) path => take path delay
-            delay = {"src": e.arc.source.name, "dest": e.arc.dest.name, "src_node": e.source.location, "dest_node": e.dest.location, "delay": sp.path_delay(links, path), "src_vnf_delay": e.arc.source.vnf_delay, "dest_vnf_delay": e.arc.dest.vnf_delay }
+            delay = {"src": e.arc.source.name, "dest": e.arc.dest.name, "src_node": e.source.location, "dest_node": e.dest.location, "path_delay": sp.path_delay(links, path), "src_vnf_delay": e.arc.source.vnf_delay, "dest_vnf_delay": e.arc.dest.vnf_delay }
             result["metrics"]["delays"].append(delay)
             result["metrics"]["total_delay"] += sp.path_delay(links, path)+e.arc.source.vnf_delay+e.arc.dest.vnf_delay
 
