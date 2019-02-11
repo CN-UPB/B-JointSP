@@ -54,6 +54,7 @@ class Template:
         direction = "forward"
         end_reached = False
         for j in topo_order:
+            
             if j.end:
                 end_reached = True
             # switch direction to backward after last end component
@@ -63,7 +64,9 @@ class Template:
             if j.source:
                 if direction == "forward":
                     out_dr[(j, direction, 0)] = src_dr
+
                 continue
+
 
             # forward direction refers to the ingoing data rates and includes end components
             if direction == "forward":
@@ -87,8 +90,13 @@ class Template:
                 # resource consumption
                 cpu = j.cpu_req(in_dr_fwd + in_dr_bwd)
                 mem = j.mem_req(in_dr_fwd + in_dr_bwd)
+                
+                
                 total_cpu += cpu
                 total_mem += mem
+
+
+               
 
                 # compute outgoing data rates and store them in the dictionary (end components only have bwd outputs)
                 if j.end:
@@ -99,6 +107,7 @@ class Template:
                     out_drs = [j.outgoing(in_dr_fwd, k_out) for k_out in range(j.outputs)]
                     for k_out in range(j.outputs):
                         out_dr[(j, "forward", k_out)] = out_drs[k_out]
+            
 
             if direction == "backward":
                 # set ingoing data rates in forward direction to 0
@@ -123,6 +132,7 @@ class Template:
                 mem = j.mem_req(in_dr_fwd + in_dr_bwd)
                 total_cpu += cpu
                 total_mem += mem
+               
 
                 # compute outgoing data rates and store them in the dictionary
                 out_drs = [j.outgoing_back(in_dr_bwd, k_out) for k_out in range(j.outputs_back)]
@@ -131,8 +141,9 @@ class Template:
 
         total_dr = sum(out_dr.values())
         print("{}'s weight: {}\n".format(self, total_cpu+total_mem+total_dr))
+        
+        
         return total_cpu + total_mem + total_dr
-
 
     # start with source component and continue breadth-first style (first forward then backward direction)
     # FUTURE WORK: set as property/constant such that it only has to be computed once (eg, in init)

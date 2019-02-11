@@ -38,7 +38,6 @@ def objective_value(overlays, print_info=False):
     # calculate changed instances (compared to previous instances)
     curr_instances = {i for ol in overlays.values() for i in ol.instances}
     changed = prev_instances ^ curr_instances  # instances that are were added or removed
-
     # record max over-subscription of node capacities
     consumed_cpu, consumed_mem = consumed_node_resources(overlays)
     max_cpu_over, max_mem_over = 0, 0
@@ -73,6 +72,14 @@ def objective_value(overlays, print_info=False):
     for key in link_used:
         total_delay += links.delay[(key[3], key[4])]
 
+    # calculate total vnf delay of each node and add it to total_delay
+    vnf_delays = 0
+    for i in curr_instances:
+        vnf_delays += i.component.vnf_delay
+
+    # adding vnf_delay to total_delay
+    total_delay += vnf_delays
+    
     # calculate total consumed resources
     total_consumed_cpu = sum(consumed_cpu[v] for v in nodes.ids)
     total_consumed_mem = sum(consumed_mem[v] for v in nodes.ids)
