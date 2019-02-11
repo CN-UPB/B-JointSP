@@ -77,6 +77,9 @@ def objective_value(overlays, print_info=False):
     for i in curr_instances:
         vnf_delays += i.component.vnf_delay
 
+    # adding vnf_delay to total_delay
+    total_delay += vnf_delays
+    
     # calculate total consumed resources
     total_consumed_cpu = sum(consumed_cpu[v] for v in nodes.ids)
     total_consumed_mem = sum(consumed_mem[v] for v in nodes.ids)
@@ -116,7 +119,7 @@ def objective_value(overlays, print_info=False):
 
     # minimize total delay
     elif obj == objective.DELAY:
-        value = total_delay+vnf_delays
+        value = total_delay
 
     else:
         logging.error("Objective {} unknown".format(obj))

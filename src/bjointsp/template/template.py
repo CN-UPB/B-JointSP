@@ -49,7 +49,7 @@ class Template:
         # iterate over components in topological order, determine outgoing dr for each and store it in out_dr
         # first, consider only forward direction then only backward
         # also determine cpu/mem consumption per component and direction and increase total_cpu/mem accordingly
-        total_cpu, total_mem = 0, 0, 
+        total_cpu, total_mem = 0, 0
         topo_order = self.topological_component_order()
         direction = "forward"
         end_reached = False

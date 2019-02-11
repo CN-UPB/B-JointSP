@@ -84,6 +84,7 @@ def save_heuristic_variables(result, changed_instances, instances, edges, nodes,
     result["metrics"]["vnf_delays"] = []
     result["metrics"]["total_path_delay"] = 0
     result["metrics"]["total_vnf_delay"] = 0
+    result['metrics']["total_delay"] = 0
     result["placement"]["links"] = []
     consumed_dr = defaultdict(int)		# default = 0
     for e in edges:
@@ -95,6 +96,7 @@ def save_heuristic_variables(result, changed_instances, instances, edges, nodes,
             path_delay = {"src": e.arc.source.name, "dest": e.arc.dest.name, "src_node": e.source.location, "dest_node": e.dest.location, "path_delay": sp.path_delay(links, path)}
             result["metrics"]["path_delays"].append(path_delay)
             result["metrics"]["total_path_delay"] += sp.path_delay(links, path)
+            result["metrics"]["total_delay"] += sp.path_delay(links, path)
 
             # go through nodes of each path and increase the dr of the traversed links
             for i in range(len(path) - 1):
@@ -105,9 +107,10 @@ def save_heuristic_variables(result, changed_instances, instances, edges, nodes,
                     result["placement"]["links"].append(link)
         for path in e.paths:
             # record vnf delays
-            vnf_delay = {"dest_vnf": e.arc.dest.name, "dest_vnf_delay": e.arc.dest.vnf_delay }
+            vnf_delay = {"vnf": e.arc.dest.name, "vnf_delay": e.arc.dest.vnf_delay }
             result["metrics"]["vnf_delays"].append(vnf_delay)
             result["metrics"]["total_vnf_delay"] += e.arc.dest.vnf_delay
+            result["metrics"]["total_delay"] += e.arc.dest.vnf_delay
 
 
     # link capacity violations
