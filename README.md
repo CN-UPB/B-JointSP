@@ -12,6 +12,9 @@ If you use B-JointSP in your research, please cite our work:
 
 *Note: For the source code originally implemented and submitted to IEEE NetSoft 2018, refer to the corresponding [release](https://github.com/CN-UPB/B-JointSP/releases/tag/v1.0) or [branch](https://github.com/CN-UPB/B-JointSP/tree/netsoft2018). The master branch contains only the heuristic, not the MIP, and is greatly extended compared to the original code.*
 
+### Changelog
+
+* Feb 2019: Added VNF delays to templates and to calculation of total delay
 
 ## Setup
 
