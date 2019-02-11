@@ -17,9 +17,22 @@ obj = objective.COMBINED
 
 # solve with heuristic; interface to place-emu: triggers placement
 def place(network_file, template_file, source_file, fixed_file=None, prev_embedding_file=None, cpu=None, mem=None, dr=None):
+    seed = random.randint(0, 9999)
+    seed_subfolder = False
+    random.seed(seed)
+
+    # set up logging into file Data/logs/heuristic/scenario_timestamp_seed.log
+    # logging.disable(logging.CRITICAL)     # disable logging
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    os.makedirs("logs/heuristic/obj{}".format(obj), exist_ok=True)
+    logging.basicConfig(filename="logs/heuristic/obj{}/{}_{}_{}.log".format(obj, os.path.basename(network_file)[:-4], timestamp, seed),
+                        level=logging.DEBUG, format="%(asctime)s(%(levelname)s):\t%(message)s", datefmt="%H:%M:%S")
+
     nodes, links = reader.read_network(network_file, cpu, mem, dr)
     template, source_components = reader.read_template(template_file, return_src_components=True)
     templates = [template]
+    # print(template)
+    # exit()
     sources = reader.read_sources(source_file, source_components)
     components = {j for t in templates for j in t.components}
     fixed = []
@@ -32,17 +45,9 @@ def place(network_file, template_file, source_file, fixed_file=None, prev_embedd
     input_files = [network_file, template_file, source_file, fixed_file, prev_embedding_file]
     # TODO: support >1 template
 
-    seed = random.randint(0, 9999)
-    seed_subfolder = False
-    random.seed(seed)
+   
     print("Using seed {}".format(seed))
 
-    # set up logging into file Data/logs/heuristic/scenario_timestamp_seed.log
-    # logging.disable(logging.CRITICAL)		# disable logging
-    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    os.makedirs("logs/heuristic/obj{}".format(obj), exist_ok=True)
-    logging.basicConfig(filename="logs/heuristic/obj{}/{}_{}_{}.log".format(obj, os.path.basename(network_file)[:-4], timestamp, seed),
-                        level=logging.DEBUG, format="%(asctime)s(%(levelname)s):\t%(message)s", datefmt="%H:%M:%S")
 
     logging.info("Starting initial embedding at {}".format(timestamp))
     print("Initial embedding\n")
