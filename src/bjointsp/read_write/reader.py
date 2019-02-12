@@ -13,6 +13,7 @@ from bjointsp.template.template import Template
 from bjointsp.overlay.overlay import Overlay
 from bjointsp.overlay.instance import Instance
 from bjointsp.overlay.edge import Edge
+import logging
 
 
 # remove empty values (from multiple delimiters in a row)
@@ -113,7 +114,15 @@ def read_template(file, return_src_components=False):
             inputs = (vnf["inputs_fwd"], vnf["inputs_bwd"])
             outputs = (vnf["outputs_fwd"], vnf["outputs_bwd"])
             outgoing = (vnf["out_fwd"], vnf["out_bwd"])
-            component = Component(vnf["name"], vnf["type"], vnf["stateful"], inputs, outputs, vnf["cpu"], vnf["mem"], outgoing, vnf["image"])
+            # Try to retrieve the image if it's in the template
+            vnf_image = vnf.get("image", None)
+            # Getting the VNF delay from YAML, checking to see if key exists, otherwise set default 0
+            vnf_delay = vnf.get("vnf_delay", 0)
+            # Check whether vnf is source and has cpu and mem requirements.
+            if (vnf["type"] == "source") and ((len(vnf["cpu"]) == 1 and (vnf["cpu"][0] > 0)) or (len(vnf["mem"]) == 1 and (vnf["mem"][0] > 0))):
+                logging.info("\tSource component {} has CPU:{} and MEM:{} requirements. Check the template file".format(vnf['name'], vnf['cpu'], vnf['mem']))
+                print ("Source component {} has CPU:{} and MEM:{} requirements. Check the template file".format(vnf['name'], vnf['cpu'], vnf['mem']))
+            component = Component(vnf["name"], vnf["type"], vnf["stateful"], inputs, outputs, vnf["cpu"], vnf["mem"], outgoing, vnf_delay, config=vnf_image)
             components.append(component)
 
         for arc in template["vlinks"]:
