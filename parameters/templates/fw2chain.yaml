@@ -10,6 +10,7 @@ vnfs:
     outputs_bwd: 0
     cpu: [1]
     mem: [1]
+    vnf_delay: 0
     out_fwd: []
     out_bwd: []
     image: '{"image":"placement-user-img", "network":"(id=output,ip=77.0.0.1/24)"}'
@@ -22,6 +23,7 @@ vnfs:
     outputs_bwd: 0
     cpu: [1,0]
     mem: [1,0]
+    vnf_delay: 100
     out_fwd:
       - [1,0]
     out_bwd: []
@@ -35,6 +37,7 @@ vnfs:
     outputs_bwd: 0
     cpu: [1,0]
     mem: [1,0]
+    vnf_delay: 55
     out_fwd:
       - [1,0]
     out_bwd: []
@@ -48,6 +51,7 @@ vnfs:
     outputs_bwd: 0
     cpu: [1,0]
     mem: [1,0]
+    vnf_delay: 85
     out_fwd: []
     out_bwd: []
     image: '{"image":"placement-apache-img", "network":"(id=input,ip=99.0.0.2/24)"}'

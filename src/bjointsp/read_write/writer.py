@@ -33,6 +33,23 @@ def create_result_file(input_files, subfolder, seed=None, seed_subfolder=False, 
 
     return result_path
 
+#calculates end to end delay for every flow
+def save_end2end_delay(edges, links):
+    flow_delays = {}
+    for edge in edges:
+        for flow in edge.flows:
+            if flow.id not in flow_delays:
+                flow_delays[flow.id] = 0
+
+            # adding vnf_delays of destinations
+            flow_delays[flow.id] += edge.dest.component.vnf_delay
+            # adding path delay ,path delays are always the shortest paths and hence the same, so just adding the one at 0th index.
+            flow_delays[flow.id] += sp.path_delay(links, edge.paths[0])
+    print("Flow Delays: ")
+    for key in flow_delays.keys():
+        print(str(key) + " : " + str(flow_delays[key]))
+    return flow_delays
+
 
 # add variable values to the result dictionary
 def save_heuristic_variables(result, changed_instances, instances, edges, nodes, links):
@@ -84,6 +101,7 @@ def save_heuristic_variables(result, changed_instances, instances, edges, nodes,
     result["metrics"]["vnf_delays"] = []
     result["metrics"]["total_path_delay"] = 0
     result["metrics"]["total_vnf_delay"] = 0
+    result["metrics"]["max_endToEnd_delay"] = 0
     result['metrics']["total_delay"] = 0
     result["placement"]["links"] = []
     consumed_dr = defaultdict(int)		# default = 0
@@ -111,10 +129,12 @@ def save_heuristic_variables(result, changed_instances, instances, edges, nodes,
         vnf_delay = {"vnf": i.component.name, "vnf_delay": i.component.vnf_delay}
         result["metrics"]["vnf_delays"].append(vnf_delay)
         result["metrics"]["total_vnf_delay"] += i.component.vnf_delay
-
     # record total delay = link + vnf delay
     result["metrics"]["total_delay"] = result["metrics"]["total_path_delay"] + result["metrics"]["total_vnf_delay"]
 
+    #record max end-to-end delay
+    endToEnd = save_end2end_delay(edges,links)
+    result["metrics"]["max_endToEnd_delay"] = max(endToEnd.values())
 
     # link capacity violations
     result["placement"]["dr_oversub"] = []
