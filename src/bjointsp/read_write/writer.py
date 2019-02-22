@@ -40,14 +40,10 @@ def save_end2end_delay(edges, links):
         for flow in edge.flows:
             if flow.id not in flow_delays:
                 flow_delays[flow.id] = 0
-
             # adding vnf_delays of destinations
             flow_delays[flow.id] += edge.dest.component.vnf_delay
             # adding path delay ,path delays are always the shortest paths and hence the same, so just adding the one at 0th index.
             flow_delays[flow.id] += sp.path_delay(links, edge.paths[0])
-    print("Flow Delays: ")
-    for key in flow_delays.keys():
-        print(str(key) + " : " + str(flow_delays[key]))
     return flow_delays
 
 
