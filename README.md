@@ -58,6 +58,6 @@ This should start the heuristic and create a result in the `results/bjointsp` di
 
 ## Contact
 
-Lead developer: Stefan Schneider (@StefanUPB)
+Lead developer: [Stefan Schneider](https://github.com/stefanbschneider/)
 
 For questions or support, please use GitHub's issue system.
