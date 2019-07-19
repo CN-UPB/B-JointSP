@@ -54,7 +54,8 @@ As an example, you can run the following command from the project root folder (w
 bjointsp -n parameters/networks/Abilene.graphml -t parameters/templates/fw1chain.yaml -s parameters/sources/source0.yaml
 ```
 
-This should start the heuristic and create a result in the `results/bjointsp` directory in form of a yaml file.
+This should start the heuristic and create a result in the `results/bjointsp` directory in form of a yaml file. 
+The repository contains one result for the above command as an example.
 
 ## Contact
 
