@@ -55,7 +55,7 @@ bjointsp -n parameters/networks/Abilene.graphml -t parameters/templates/fw1chain
 ```
 
 This should start the heuristic and create a result in the `results/bjointsp` directory in form of a yaml file. 
-The repository contains one result for the above command as an example.
+The repository contains one [result for the above command](https://github.com/CN-UPB/B-JointSP/blob/master/results/bjointsp/Abilene-fw1chain-source0-2019-07-19_14-52-42_9021.yaml) as an example.
 
 ## Contact
 
