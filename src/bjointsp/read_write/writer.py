@@ -130,7 +130,11 @@ def save_heuristic_variables(result, changed_instances, instances, edges, nodes,
 
     #record max end-to-end delay
     endToEnd = save_end2end_delay(edges,links)
-    result["metrics"]["max_endToEnd_delay"] = max(endToEnd.values())
+    if endToEnd:
+        result["metrics"]["max_endToEnd_delay"] = max(endToEnd.values())
+    # for an empty placement, there is no end to end delay
+    else:
+        result["metrics"]["max_endToEnd_delay"] = 0
 
     # link capacity violations
     result["placement"]["dr_oversub"] = []
@@ -181,6 +185,8 @@ def write_heuristic_result(runtime, obj_value, changed, overlays, input_files, o
         result["input"]["num_vnfs"] = len(service["vnfs"])
     with open(input_files[2]) as f:
         sources = yaml.load(f)
+        if sources is None:
+            sources = []
         result["input"]["num_sources"] = len(sources)
 
     result = save_heuristic_variables(result, changed, instances, edges, nodes, links)
