@@ -146,6 +146,11 @@ def read_sources(file, source_components):
     sources = []
     with open(file, "r") as sources_file:
         yaml_file = yaml.load(sources_file)
+
+        # special case: no sources
+        if yaml_file is None:
+            return sources
+
         for src in yaml_file:
             # get the component with the specified name: first (and only) element with source name
             try:
