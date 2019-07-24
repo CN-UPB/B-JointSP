@@ -103,7 +103,8 @@ def save_heuristic_variables(result, changed_instances, instances, edges, nodes,
     consumed_dr = defaultdict(int)		# default = 0
     for e in edges:
         for f in e.flows:
-            flow = {"arc": str(e.arc), "src_node": e.source.location, "dst_node": e.dest.location, "flow_id": f.id}
+            flow = {"arc": str(e.arc), "src_node": e.source.location, "dst_node": e.dest.location,
+                    "src_vnf": e.source.component.name, "dest_vnf": e.dest.component.name, "flow_id": f.id}
             result["placement"]["flows"].append(flow)
         for path in e.paths:
             # record edge delay: all flows take the same (shortest) path => take path delay
