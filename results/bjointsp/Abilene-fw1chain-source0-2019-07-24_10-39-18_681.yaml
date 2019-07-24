@@ -8,14 +8,14 @@ input:
   num_vnfs: 3
   objective: 0
   prev_embedding: None
-  seed: 9021
+  seed: 681
   service: fw1chain.yaml
   sources: source0.yaml
 metrics:
   changed:
-  - name: vnf_fw1
-    node: pop0
   - name: vnf_web
+    node: pop0
+  - name: vnf_fw1
     node: pop0
   - name: vnf_user
     node: pop0
@@ -37,26 +37,26 @@ metrics:
     path_delay: 0
     src: vnf_fw1
     src_node: pop0
-  runtime: 0.17009210586547852
+  runtime: 0.07876706123352051
   total_delay: 55
   total_path_delay: 0
   total_vnf_delay: 55
   vnf_delays:
-  - vnf: vnf_fw1
-    vnf_delay: 35
   - vnf: vnf_web
     vnf_delay: 20
+  - vnf: vnf_fw1
+    vnf_delay: 35
   - vnf: vnf_user
     vnf_delay: 0
 placement:
   alloc_node_res:
   - cpu: 1
     mem: 1
-    name: vnf_fw1
+    name: vnf_web
     node: pop0
   - cpu: 1
     mem: 1
-    name: vnf_web
+    name: vnf_fw1
     node: pop0
   - cpu: 0
     mem: 0
@@ -66,13 +66,17 @@ placement:
   dr_oversub: []
   flows:
   - arc: vnf_user.0->vnf_fw1.0
+    dest_vnf: vnf_fw1
     dst_node: pop0
     flow_id: f1
     src_node: pop0
+    src_vnf: vnf_user
   - arc: vnf_fw1.0->vnf_web.0
+    dest_vnf: vnf_web
     dst_node: pop0
     flow_id: f1
     src_node: pop0
+    src_vnf: vnf_fw1
   links: []
   mem_oversub: []
   vlinks:
@@ -85,13 +89,13 @@ placement:
     src_node: pop0
     src_vnf: vnf_fw1
   vnfs:
-  - image: '{"image":"placement-fw1-img", "network":"(id=input,ip=88.0.0.2/24),(id=output,ip=99.0.0.1/24)"}'
-    name: vnf_fw1
-    node: pop0
   - image: '{"image":"placement-apache-img", "network":"(id=input,ip=99.0.0.2/24)"}'
     name: vnf_web
+    node: pop0
+  - image: '{"image":"placement-fw1-img", "network":"(id=input,ip=88.0.0.2/24),(id=output,ip=99.0.0.1/24)"}'
+    name: vnf_fw1
     node: pop0
   - image: '{"image":"placement-user-img", "network":"(id=output,ip=10.0.0.1/24)"}'
     name: vnf_user
     node: pop0
-time: 2019-07-19_14-52-42
+time: 2019-07-24_10-39-18
