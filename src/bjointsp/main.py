@@ -46,11 +46,11 @@ def place(network_file, template_file, source_file, fixed_file=None, prev_embedd
     # TODO: support >1 template
 
    
-    print("Using seed {}".format(seed))
+    #print("Using seed {}".format(seed))
 
 
     logging.info("Starting initial embedding at {}".format(timestamp))
-    print("Initial embedding\n")
+    #print("Initial embedding\n")
     # TODO: make less verbose or only as verbose when asked for (eg, with -v argument)
     init_time, runtime, obj_value, changed, overlays = control.solve(nodes, links, templates, prev_embedding, sources, fixed, obj)
     result = writer.write_heuristic_result(runtime, obj_value, changed, overlays.values(), input_files, obj, nodes, links, seed, seed_subfolder)
