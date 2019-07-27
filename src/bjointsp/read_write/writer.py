@@ -182,10 +182,10 @@ def write_heuristic_result(runtime, obj_value, changed, overlays, input_files, o
     result["input"]["num_nodes"] = network.number_of_nodes()
     result["input"]["num_edges"] = network.number_of_edges()
     with open(input_files[1]) as f:
-        service = yaml.load(f)
+        service = yaml.load(f, yaml.SafeLoader)
         result["input"]["num_vnfs"] = len(service["vnfs"])
     with open(input_files[2]) as f:
-        sources = yaml.load(f)
+        sources = yaml.load(f, yaml.SafeLoader)
         if sources is None:
             sources = []
         result["input"]["num_sources"] = len(sources)

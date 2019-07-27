@@ -39,7 +39,7 @@ def update_stateful(template):
 
             # if not used in both directions, set to non-stateful
             if not (used_forward and used_backward):
-                print("Stateful component {} is not used bidirectionally and is set to non-stateful.".format(j))
+                #print("Stateful component {} is not used bidirectionally and is set to non-stateful.".format(j))
                 j.stateful = False
 
 
@@ -109,7 +109,7 @@ def read_network(file, cpu, mem, dr):
 def read_template(file, return_src_components=False):
     components, arcs = [], []
     with open(file, "r") as template_file:
-        template = yaml.load(template_file)
+        template = yaml.load(template_file, yaml.SafeLoader)
         for vnf in template["vnfs"]:
             inputs = (vnf["inputs_fwd"], vnf["inputs_bwd"])
             outputs = (vnf["outputs_fwd"], vnf["outputs_bwd"])
@@ -121,7 +121,7 @@ def read_template(file, return_src_components=False):
             # Check whether vnf is source and has cpu and mem requirements.
             if (vnf["type"] == "source") and ((len(vnf["cpu"]) == 1 and (vnf["cpu"][0] > 0)) or (len(vnf["mem"]) == 1 and (vnf["mem"][0] > 0))):
                 logging.info("\tSource component {} has CPU:{} and MEM:{} requirements. Check the template file".format(vnf['name'], vnf['cpu'], vnf['mem']))
-                print ("Source component {} has CPU:{} and MEM:{} requirements. Check the template file".format(vnf['name'], vnf['cpu'], vnf['mem']))
+                #print ("Source component {} has CPU:{} and MEM:{} requirements. Check the template file".format(vnf['name'], vnf['cpu'], vnf['mem']))
             component = Component(vnf["name"], vnf["type"], vnf["stateful"], inputs, outputs, vnf["cpu"], vnf["mem"], outgoing, vnf_delay, config=vnf_image)
             components.append(component)
 
@@ -145,7 +145,7 @@ def read_template(file, return_src_components=False):
 def read_sources(file, source_components):
     sources = []
     with open(file, "r") as sources_file:
-        yaml_file = yaml.load(sources_file)
+        yaml_file = yaml.load(sources_file, yaml.SafeLoader)
 
         # special case: no sources
         if yaml_file is None:
@@ -222,7 +222,7 @@ def read_prev_embedding(file, templates):
                 dest = list(filter(lambda x: x.component.name == edge["dest_vnf"] and x.location == edge["dest_node"], instances))[0]
             # if the vnfs don't exist in prev_embedding (eg, through incorrect input), ignore the edge
             except IndexError:
-                print("No matching VNFs in prev_embedding for edge from {} to {}. Ignoring the edge.".format(source, dest))
+                #print("No matching VNFs in prev_embedding for edge from {} to {}. Ignoring the edge.".format(source, dest))
                 continue    # skip and continue with next edge
 
             # get arc from templates by matching against source and dest components
