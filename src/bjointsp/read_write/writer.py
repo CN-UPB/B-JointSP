@@ -194,6 +194,6 @@ def write_heuristic_result(runtime, obj_value, changed, overlays, input_files, o
 
     with open(result_file, "w", newline="") as outfile:
         yaml.dump(result, outfile, default_flow_style=False)
-        #print("Writing solution to {}".format(result_file))
+        print("Writing solution to {}".format(result_file))
 
     return result_file

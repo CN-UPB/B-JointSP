@@ -120,8 +120,8 @@ def improve(arg_nodes, arg_links, templates, arg_overlays, sources, fixed, arg_s
     #print("Total outer loop iterations: {}".format(total_outer_iterations))
     logging.info("---Heuristic finished---")
     logging.info("Total outer loop iterations: {}".format(total_outer_iterations))
-    #print("Best overlays:")
-    #for ol in best_overlays.values():
-    #    ol.print()
+    print("Best overlays:")
+    for ol in best_overlays.values():
+        ol.print()
 
     return best_overlays
