@@ -14,6 +14,7 @@ from bjointsp.overlay.overlay import Overlay
 from bjointsp.overlay.instance import Instance
 from bjointsp.overlay.edge import Edge
 import logging
+logger = logging.getLogger('bjointsp')
 
 
 # remove empty values (from multiple delimiters in a row)
@@ -120,7 +121,7 @@ def read_template(file, return_src_components=False):
             vnf_delay = vnf.get("vnf_delay", 0)
             # Check whether vnf is source and has cpu and mem requirements.
             if (vnf["type"] == "source") and ((len(vnf["cpu"]) == 1 and (vnf["cpu"][0] > 0)) or (len(vnf["mem"]) == 1 and (vnf["mem"][0] > 0))):
-                logging.info("\tSource component {} has CPU:{} and MEM:{} requirements. Check the template file".format(vnf['name'], vnf['cpu'], vnf['mem']))
+                logger.info("\tSource component {} has CPU:{} and MEM:{} requirements. Check the template file".format(vnf['name'], vnf['cpu'], vnf['mem']))
                 #print ("Source component {} has CPU:{} and MEM:{} requirements. Check the template file".format(vnf['name'], vnf['cpu'], vnf['mem']))
             component = Component(vnf["name"], vnf["type"], vnf["stateful"], inputs, outputs, vnf["cpu"], vnf["mem"], outgoing, vnf_delay, config=vnf_image)
             components.append(component)
