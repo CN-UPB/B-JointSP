@@ -9,6 +9,7 @@ import bjointsp.read_write.reader as reader
 import bjointsp.read_write.writer as writer
 from bjointsp.heuristic import control
 import bjointsp.objective as objective
+logger = logging.getLogger('bjointsp')
 
 
 # set objective for MIP and heuristic
@@ -49,7 +50,7 @@ def place(network_file, template_file, source_file, fixed_file=None, prev_embedd
     #print("Using seed {}".format(seed))
 
 
-    logging.info("Starting initial embedding at {}".format(timestamp))
+    logger.info("Starting initial embedding at {}".format(timestamp))
     #print("Initial embedding\n")
     # TODO: make less verbose or only as verbose when asked for (eg, with -v argument)
     init_time, runtime, obj_value, changed, overlays = control.solve(nodes, links, templates, prev_embedding, sources, fixed, obj)
