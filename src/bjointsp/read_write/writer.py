@@ -155,7 +155,7 @@ def save_heuristic_variables(result, changed_instances, instances, edges, nodes,
 
 
 def write_heuristic_result(runtime, obj_value, changed, overlays, input_files, obj, nodes, links, seed, seed_subfolder):
-    result_file = create_result_file(input_files, "bjointsp", seed=seed, seed_subfolder=seed_subfolder, obj=obj)
+    result_file = create_result_file(input_files[0:4], "bjointsp", seed=seed, seed_subfolder=seed_subfolder, obj=obj)
 
     instances, edges = set(), set()
     for ol in overlays:
