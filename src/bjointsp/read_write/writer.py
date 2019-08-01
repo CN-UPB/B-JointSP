@@ -1,10 +1,10 @@
 import os
+import networkx as nx
 import yaml
+
 from collections import defaultdict
 from datetime import datetime
-import bjointsp.objective as objective
 from bjointsp.heuristic import shortest_paths as sp
-import networkx as nx
 
 
 # prepare result-file based on scenario-file: in results-subdirectory, using scenario name + timestamp (+ seed + event)
@@ -33,7 +33,8 @@ def create_result_file(input_files, subfolder, seed=None, seed_subfolder=False, 
 
     return result_path
 
-#calculates end to end delay for every flow
+
+# calculates end to end delay for every flow
 def save_end2end_delay(edges, links):
     flow_delays = {}
     for edge in edges:
@@ -42,7 +43,8 @@ def save_end2end_delay(edges, links):
                 flow_delays[flow.id] = 0
             # adding vnf_delays of destinations
             flow_delays[flow.id] += edge.dest.component.vnf_delay
-            # adding path delay ,path delays are always the shortest paths and hence the same, so just adding the one at 0th index.
+            # adding path delay
+            # path delays are always the shortest paths and hence the same, so just adding the one at 0th index.
             flow_delays[flow.id] += sp.path_delay(links, edge.paths[0])
     return flow_delays
 
@@ -100,7 +102,7 @@ def save_heuristic_variables(result, changed_instances, instances, edges, nodes,
     result["metrics"]["max_endToEnd_delay"] = 0
     result['metrics']["total_delay"] = 0
     result["placement"]["links"] = []
-    consumed_dr = defaultdict(int)		# default = 0
+    consumed_dr = defaultdict(int)  # default = 0
     for e in edges:
         for f in e.flows:
             flow = {"arc": str(e.arc), "src_node": e.source.location, "dst_node": e.dest.location,
@@ -108,7 +110,8 @@ def save_heuristic_variables(result, changed_instances, instances, edges, nodes,
             result["placement"]["flows"].append(flow)
         for path in e.paths:
             # record edge delay: all flows take the same (shortest) path => take path delay
-            path_delay = {"src": e.arc.source.name, "dest": e.arc.dest.name, "src_node": e.source.location, "dest_node": e.dest.location, "path_delay": sp.path_delay(links, path)}
+            path_delay = {"src": e.arc.source.name, "dest": e.arc.dest.name, "src_node": e.source.location,
+                          "dest_node": e.dest.location, "path_delay": sp.path_delay(links, path)}
             result["metrics"]["path_delays"].append(path_delay)
             result["metrics"]["total_path_delay"] += sp.path_delay(links, path)
             result["metrics"]["total_delay"] += sp.path_delay(links, path)
@@ -116,9 +119,10 @@ def save_heuristic_variables(result, changed_instances, instances, edges, nodes,
             # go through nodes of each path and increase the dr of the traversed links
             for i in range(len(path) - 1):
                 # skip connections on the same node (no link used)
-                if path[i] != path[i+1]:
-                    consumed_dr[(path[i], path[i+1])] += e.flow_dr() / len(e.paths)
-                    link = {"arc": str(e.arc), "edge_src": e.source.location, "edge_dst": e.dest.location, "link_src": path[i], "link_dst": path[i+1]}
+                if path[i] != path[i + 1]:
+                    consumed_dr[(path[i], path[i + 1])] += e.flow_dr() / len(e.paths)
+                    link = {"arc": str(e.arc), "edge_src": e.source.location, "edge_dst": e.dest.location,
+                            "link_src": path[i], "link_dst": path[i + 1]}
                     result["placement"]["links"].append(link)
 
     # record VNF delay
@@ -129,8 +133,8 @@ def save_heuristic_variables(result, changed_instances, instances, edges, nodes,
     # record total delay = link + vnf delay
     result["metrics"]["total_delay"] = result["metrics"]["total_path_delay"] + result["metrics"]["total_vnf_delay"]
 
-    #record max end-to-end delay
-    endToEnd = save_end2end_delay(edges,links)
+    # record max end-to-end delay
+    endToEnd = save_end2end_delay(edges, links)
     if endToEnd:
         result["metrics"]["max_endToEnd_delay"] = max(endToEnd.values())
     # for an empty placement, there is no end to end delay
@@ -151,7 +155,7 @@ def save_heuristic_variables(result, changed_instances, instances, edges, nodes,
 
 
 def write_heuristic_result(runtime, obj_value, changed, overlays, input_files, obj, nodes, links, seed, seed_subfolder):
-    result_file = create_result_file(input_files, "bjointsp", seed=seed, seed_subfolder=seed_subfolder, obj=obj)
+    result_file = create_result_file(input_files[0:4], "bjointsp", seed=seed, seed_subfolder=seed_subfolder, obj=obj)
 
     instances, edges = set(), set()
     for ol in overlays:
