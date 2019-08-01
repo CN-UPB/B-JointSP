@@ -66,7 +66,7 @@ def improve(arg_nodes, arg_links, templates, arg_overlays, sources, fixed, arg_s
             if t not in modified_overlays.keys():
                 continue
             ol = modified_overlays[t]
-            #ol.print()
+            # ol.print()
 
             # set random instance to tabu and remove it and following instances
             # FUTURE WORK: keep instances in tabu-list for multiple iterations?
@@ -74,50 +74,53 @@ def improve(arg_nodes, arg_links, templates, arg_overlays, sources, fixed, arg_s
             # ignore source or fixed instances, which have to be at a specific location
             non_fixed_instances = [i for i in ol.instances if not i.component.source and not i.fixed]
             if len(non_fixed_instances) == 0:
-                #print("Skip modification of {}'s overlay because all instances are fixed".format(t))
+                # print("Skip modification of {}'s overlay because all instances are fixed".format(t))
                 logger.info("Skip modification of {}'s overlay because all instances are fixed".format(t))
                 continue
             rand_instance = random.choice(non_fixed_instances)
             tabu.add((rand_instance.component, rand_instance.location))
 
-            #print("\n--Iteration {}: Modifying overlay of {}--".format(total_outer_iterations, ol.template))
-            #print("Set random instance {} of {}'s overlay to tabu and rebuild overlay".format(rand_instance, ol.template))
+            # print("\n--Iteration {}: Modifying overlay of {}--".format(total_outer_iterations, ol.template))
+            # print("Set random instance {} of {}'s overlay to tabu and rebuild overlay".format(rand_instance,
+            #        ol.template))
             logger.info("--Iteration {}: Modifying overlay of {}--".format(total_outer_iterations, ol.template))
-            logger.info("Set random instance {} of {}'s overlay to tabu and rebuild overlay".format(rand_instance, ol.template))
+            logger.info("Set random instance {} of {}'s overlay to tabu and rebuild overlay".format(rand_instance,
+                                                                                                    ol.template))
 
             reset_overlay(ol.template, rand_instance, modified_overlays)
-            modified_overlays = heuristic.solve(nodes, links, templates, modified_overlays, sources, fixed, shortest_paths, tabu)
+            modified_overlays = heuristic.solve(nodes, links, templates, modified_overlays, sources, fixed,
+                                                shortest_paths, tabu)
 
             # update solution
             new_obj_value = control.objective_value(modified_overlays)
-            #print("Objective value of modified overlays: {}".format(new_obj_value))
+            # print("Objective value of modified overlays: {}".format(new_obj_value))
             logger.info("Objective value of modified overlays: {}".format(new_obj_value))
             incumbent_obj_value = control.objective_value(incumbent_overlays)
             if new_obj_value < incumbent_obj_value:
-                #print("\tImproved objective value -> new incumbent solution")
+                # print("\tImproved objective value -> new incumbent solution")
                 logger.info("\tImproved objective value -> new incumbent solution")
                 incumbent_overlays = copy.deepcopy(modified_overlays)
                 if new_obj_value < control.objective_value(best_overlays):
-                    #print("\tNew best solution")
+                    # print("\tNew best solution")
                     logger.info("\tNew best solution")
                     best_overlays = copy.deepcopy(modified_overlays)
                     unsuccessful_iterations = 0
             # even update incumbent solution if it is slightly worse (50% chance)
             elif new_obj_value <= 1.1 * incumbent_obj_value:
                 if random.random() < 0.5:
-                    #print("\tOnly slightly worse objective value; new incumbent solution")
+                    # print("\tOnly slightly worse objective value; new incumbent solution")
                     logger.info("\tOnly slightly worse objective value; new incumbent solution")
                     incumbent_overlays = copy.deepcopy(modified_overlays)
                 else:
-                    #print("\tOnly slightly worse objective value; solution discarded")
+                    # print("\tOnly slightly worse objective value; solution discarded")
                     logger.info("\tOnly slightly worse objective value; solution discarded")
             else:
-                #print("\tWorse objective value -> solution discarded after last inner loop")
+                # print("\tWorse objective value -> solution discarded after last inner loop")
                 logger.info("\tWorse objective value -> solution discarded after this iteration")
                 # keep using modified_overlays during the remainder of the inner loop
 
-    #print("\n---Heuristic finished---")
-    #print("Total outer loop iterations: {}".format(total_outer_iterations))
+    # print("\n---Heuristic finished---")
+    # print("Total outer loop iterations: {}".format(total_outer_iterations))
     logger.info("---Heuristic finished---")
     logger.info("Total outer loop iterations: {}".format(total_outer_iterations))
     print("Best overlays:")

@@ -1,19 +1,22 @@
+import logging
 import networkx as nx
-import yaml
 import numpy as np
+import yaml
+
 from geopy.distance import vincenty
 from bjointsp.fixed.fixed_instance import FixedInstance
 from bjointsp.fixed.source import Source
+from bjointsp.heuristic import shortest_paths as sp
 from bjointsp.network.links import Links
 from bjointsp.network.nodes import Nodes
+from bjointsp.overlay.edge import Edge
 from bjointsp.overlay.flow import Flow
+from bjointsp.overlay.instance import Instance
+from bjointsp.overlay.overlay import Overlay
 from bjointsp.template.arc import Arc
 from bjointsp.template.component import Component
 from bjointsp.template.template import Template
-from bjointsp.overlay.overlay import Overlay
-from bjointsp.overlay.instance import Instance
-from bjointsp.overlay.edge import Edge
-import logging
+
 logger = logging.getLogger('bjointsp')
 
 
@@ -34,28 +37,29 @@ def update_stateful(template):
             used_backward = False
             for a in template.arcs:
                 if a.direction == "forward" and a.source == j:
-                    used_forward = True			# 1+ outgoing arc at j in forward direction
+                    used_forward = True  # 1+ outgoing arc at j in forward direction
                 if a.direction == "backward" and a.dest == j:
-                    used_backward = True		# 1+ incoming arc at j in backward direction
+                    used_backward = True  # 1+ incoming arc at j in backward direction
 
             # if not used in both directions, set to non-stateful
             if not (used_forward and used_backward):
-                #print("Stateful component {} is not used bidirectionally and is set to non-stateful.".format(j))
+                # print("Stateful component {} is not used bidirectionally and is set to non-stateful.".format(j))
                 j.stateful = False
 
 
 # read substrate network from graphml-file using NetworkX, set specified node and link capacities
-# IMPORTANT: for consistency with emulator, all node IDs are prefixed with "pop" and have to be referenced as such (eg, in source locations)
+# IMPORTANT: for consistency with emulator, all node IDs are prefixed with "pop" *
+# *and have to be referenced as such (eg, in source locations)
 def read_network(file, cpu, mem, dr):
     SPEED_OF_LIGHT = 299792458  # meter per second
-    PROPAGATION_FACTOR = 0.77  	# https://en.wikipedia.org/wiki/Propagation_delay
+    PROPAGATION_FACTOR = 0.77  # https://en.wikipedia.org/wiki/Propagation_delay
 
     if not file.endswith(".graphml"):
         raise ValueError("{} is not a GraphML file".format(file))
     network = nx.read_graphml(file, node_type=int)
 
     # set nodes
-    node_ids = ["pop{}".format(n) for n in network.nodes]		# add "pop" to node index (eg, 1 --> pop1)
+    node_ids = ["pop{}".format(n) for n in network.nodes]  # add "pop" to node index (eg, 1 --> pop1)
     # if specified, use the provided uniform node capacities
     if cpu is not None and mem is not None:
         node_cpu = {"pop{}".format(n): cpu for n in network.nodes}
@@ -88,14 +92,14 @@ def read_network(file, cpu, mem, dr):
         n2 = network.nodes(data=True)[e[1]]
         n1_lat, n1_long = n1.get("Latitude"), n1.get("Longitude")
         n2_lat, n2_long = n2.get("Latitude"), n2.get("Longitude")
-        distance = vincenty((n1_lat, n1_long), (n2_lat, n2_long)).meters		# in meters
-        delay = (distance / SPEED_OF_LIGHT * 1000) * PROPAGATION_FACTOR  		# in milliseconds
+        distance = vincenty((n1_lat, n1_long), (n2_lat, n2_long)).meters  # in meters
+        delay = (distance / SPEED_OF_LIGHT * 1000) * PROPAGATION_FACTOR  # in milliseconds
         # round delay to int using np.around for consistency with emulator
         link_delay[("pop{}".format(e[0]), "pop{}".format(e[1]))] = int(np.around(delay))
 
     # add reversed links for bidirectionality
     for e in network.edges:
-        e = ("pop{}".format(e[0]),"pop{}".format(e[1]))
+        e = ("pop{}".format(e[0]), "pop{}".format(e[1]))
         e_reversed = (e[1], e[0])
         link_ids.append(e_reversed)
         link_dr[e_reversed] = link_dr[e]
@@ -120,10 +124,13 @@ def read_template(file, return_src_components=False):
             # Getting the VNF delay from YAML, checking to see if key exists, otherwise set default 0
             vnf_delay = vnf.get("vnf_delay", 0)
             # Check whether vnf is source and has cpu and mem requirements.
-            if (vnf["type"] == "source") and ((len(vnf["cpu"]) == 1 and (vnf["cpu"][0] > 0)) or (len(vnf["mem"]) == 1 and (vnf["mem"][0] > 0))):
-                logger.info("\tSource component {} has CPU:{} and MEM:{} requirements. Check the template file".format(vnf['name'], vnf['cpu'], vnf['mem']))
-                #print ("Source component {} has CPU:{} and MEM:{} requirements. Check the template file".format(vnf['name'], vnf['cpu'], vnf['mem']))
-            component = Component(vnf["name"], vnf["type"], vnf["stateful"], inputs, outputs, vnf["cpu"], vnf["mem"], outgoing, vnf_delay, config=vnf_image)
+            if (vnf["type"] == "source") and ((len(vnf["cpu"]) == 1 and (vnf["cpu"][0] > 0))or (len(vnf["mem"]) == 1 and (vnf["mem"][0] > 0))):
+                logger.info("\tSource component {} has CPU:{} and MEM:{} requirements."
+                            " Check the template file".format(vnf['name'], vnf['cpu'], vnf['mem']))
+                # print ("Source component {} has CPU:{} and MEM:{} requirements.
+                #         Check the template file".format(vnf['name'], vnf['cpu'], vnf['mem']))
+            component = Component(vnf["name"], vnf["type"], vnf["stateful"], inputs,
+                                  outputs, vnf["cpu"], vnf["mem"], outgoing, vnf_delay, config=vnf_image)
             components.append(component)
 
         for arc in template["vlinks"]:
@@ -164,7 +171,7 @@ def read_sources(file, source_components):
             # read flows
             flows = []
             for f in src["flows"]:
-                flows.append(Flow(f["id"], f["data_rate"]))		# explicit float cast necessary for dr?
+                flows.append(Flow(f["id"], f["data_rate"]))  # explicit float cast necessary for dr?
 
             sources.append(Source(src["node"], component, flows))
     return sources
@@ -189,14 +196,16 @@ def read_fixed_instances(file, components):
 
 
 # read previous embedding from yaml file
-def read_prev_embedding(file, templates):
+def read_prev_embedding(file, templates, nodes, links):
+    # create shortest paths
+    shortest_paths = sp.all_pairs_shortest_paths(nodes, links)
     # create empty overlays for all templates
-    prev_embedding = {}         # dict: template -> overlay
+    prev_embedding = {}  # dict: template -> overlay
     for t in templates:
         prev_embedding[t] = Overlay(t, [], [])
 
     with open(file, "r") as f:
-        yaml_file = yaml.load(f)
+        yaml_file = yaml.load(f, yaml.SafeLoader)
 
         # read and create VNF instances of previous embedding
         for vnf in yaml_file["placement"]["vnfs"]:
@@ -219,12 +228,15 @@ def read_prev_embedding(file, templates):
 
             # try to get source and dest instance from list of instances
             try:
-                source = list(filter(lambda x: x.component.name == edge["src_vnf"] and x.location == edge["src_node"], instances))[0]
-                dest = list(filter(lambda x: x.component.name == edge["dest_vnf"] and x.location == edge["dest_node"], instances))[0]
+                source = list(filter(lambda x: x.component.name == edge["src_vnf"] and x.location == edge["src_node"],
+                                     instances))[0]
+                dest = list(filter(lambda x: x.component.name == edge["dest_vnf"] and x.location == edge["dest_node"],
+                                   instances))[0]
             # if the vnfs don't exist in prev_embedding (eg, through incorrect input), ignore the edge
             except IndexError:
-                #print("No matching VNFs in prev_embedding for edge from {} to {}. Ignoring the edge.".format(source, dest))
-                continue    # skip and continue with next edge
+                # print("No matching VNFs in prev_embedding for edge from {} to {}.
+                #                                         Ignoring the edge.".format(source, dest))
+                continue  # skip and continue with next edge
 
             # get arc from templates by matching against source and dest components
             for t in templates:
@@ -232,6 +244,8 @@ def read_prev_embedding(file, templates):
                     # assume t has an arc source->dest if both components are in t
                     arc = list(filter(lambda x: x.source == source.component and x.dest == dest.component, t.arcs))[0]
                     # add new edge to overlay of corresponding template
-                    prev_embedding[t].edges.append(Edge(arc, source, dest))
+                    edge = Edge(arc, source, dest)
+                    prev_embedding[t].edges.append(edge)
+                    edge.paths.append(shortest_paths[(source.location, dest.location)][0])
 
     return prev_embedding
