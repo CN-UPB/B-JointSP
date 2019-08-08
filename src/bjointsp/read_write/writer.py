@@ -146,7 +146,7 @@ def save_heuristic_variables(result, changed_instances, instances, edges, nodes,
     max_dr = 0
     for l in links.ids:
         if links.dr[l] < consumed_dr[l]:
-            result["placement"]["dr_oversub"].append({"link": l})
+            result["placement"]["dr_oversub"].append({"link": list(l)})
             if consumed_dr[l] - links.dr[l] > max_dr:
                 max_dr = consumed_dr[l] - links.dr[l]
     result["metrics"]["max_dr_oversub"] = max_dr
