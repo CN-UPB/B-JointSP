@@ -2,4 +2,49 @@
   vnf: vnf_user
   flows:
     - id: f1
-      data_rate: 1
+      data_rate: 350000
+- node: pop1
+  vnf: vnf_user
+  flows:
+    - id: f2
+      data_rate: 350000  
+- node: pop2
+  vnf: vnf_user
+  flows:
+    - id: f3
+      data_rate: 350000  
+- node: pop3
+  vnf: vnf_user
+  flows:
+    - id: f4
+      data_rate: 350000
+- node: pop4
+  vnf: vnf_user
+  flows:
+    - id: f5
+      data_rate: 350000  
+- node: pop5
+  vnf: vnf_user
+  flows:
+    - id: f6
+      data_rate: 350000 
+- node: pop6
+  vnf: vnf_user
+  flows:
+    - id: f7
+      data_rate: 350000  
+- node: pop7
+  vnf: vnf_user
+  flows:
+    - id: f8
+      data_rate: 350000
+- node: pop8
+  vnf: vnf_user
+  flows:
+    - id: f9
+      data_rate: 350000  
+- node: pop9
+  vnf: vnf_user
+  flows:
+    - id: f10
+      data_rate: 350000              

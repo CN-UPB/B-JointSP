@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/CN-UPB/B-JointSP.svg?branch=master)](https://travis-ci.org/CN-UPB/B-JointSP)
 
-# B-JointSP 
+# B-JointSP
 
 B-JointSP is an optimization problem focusing on the *joint scaling and placemen*t (called embedding) of NFV network services, consisting of interconnected virtual network functions (VNFs). The exceptional about B-JointSP is its consideration of *realistic, bidirectional network services*, in which flows return to their sources. It even supports *stateful VNFs*, that need to be traversed by the same flows in both upstream and downstream direction. Furthermore, B-JointSP allows the reuse of VNFs across different network services and supports physical network functions.
 
@@ -55,6 +55,7 @@ bjointsp -n parameters/networks/Abilene.graphml -t parameters/templates/fw1chain
 ```
 
 This should start the heuristic and create a result in the `results/bjointsp` directory in form of a yaml file.
+The repository contains one [result for the above command](https://github.com/CN-UPB/B-JointSP/blob/master/results/bjointsp/Abilene-fw1chain-source0-2019-07-24_10-39-18_681.yaml) as an example.
 
 ### Using ML Model
 
@@ -74,6 +75,6 @@ use the command below:
 
 ## Contact
 
-Lead developer: Stefan Schneider (@StefanUPB)
+Lead developer: [Stefan Schneider](https://github.com/stefanbschneider/)
 
 For questions or support, please use GitHub's issue system.

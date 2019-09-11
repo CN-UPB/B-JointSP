@@ -8,7 +8,7 @@ from bjointsp.heuristic import improvement
 from bjointsp.heuristic import shortest_paths as sp
 from bjointsp.overlay.instance import Instance
 
-
+logger = logging.getLogger('bjointsp')
 # global variables for easy access by all functions
 nodes, links, prev_instances, obj = None, None, None, None
 
@@ -16,7 +16,7 @@ nodes, links, prev_instances, obj = None, None, None, None
 # return dict of currently consumed node resources based on the instances of the specified overlays
 def consumed_node_resources(overlays):
     consumed_cpu, consumed_mem = {}, {}
-    # reused instances exist in multiple overlays with diff ingoing edges -> have to allow duplicates -> use list not set
+    # reused instances exist in multiple overlays with diff ingoing edges-> have to allow duplicates-> use list not set
     instances = [i for t in overlays.keys() for i in overlays[t].instances]
     for v in nodes.ids:
         consumed_cpu[v] = sum(i.consumed_cpu() for i in instances if i.location == v)
@@ -31,8 +31,8 @@ def objective_value(overlays, print_info=False):
     for e in edges:
         for path in e.paths:
             if sp.path_delay(links, path) > e.arc.max_delay:
-                print("Embedding INFEASIBLE because delay of path of {} is too high".format(e))
-                logging.warning("Embedding INFEASIBLE because delay of path of {} is too high".format(e))
+                # print("Embedding INFEASIBLE because delay of path of {} is too high".format(e))
+                logger.warning("Embedding INFEASIBLE because delay of path of {} is too high".format(e))
                 return math.inf
 
     # calculate changed instances (compared to previous instances)
@@ -79,7 +79,7 @@ def objective_value(overlays, print_info=False):
 
     # adding vnf_delay to total_delay
     total_delay += vnf_delays
-    
+
     # calculate total consumed resources
     total_consumed_cpu = sum(consumed_cpu[v] for v in nodes.ids)
     total_consumed_mem = sum(consumed_mem[v] for v in nodes.ids)
@@ -87,12 +87,16 @@ def objective_value(overlays, print_info=False):
 
     # print objective value info
     if print_info:
-        print("Max over-subscription: {} (cpu), {} (mem), {} (dr)".format(max_cpu_over, max_mem_over, max_dr_over))
-        print("Total delay: {}, Num changed instances: {}".format(total_delay, len(changed)))
-        print("Total consumed resources: {} (cpu), {} (mem), {} (dr)".format(total_consumed_cpu, total_consumed_mem, total_consumed_dr))
-        logging.info("Max over-subscription: {} (cpu), {} (mem), {} (dr)".format(max_cpu_over, max_mem_over, max_dr_over))
-        logging.info("Total delay: {}, Num changed instances: {}".format(total_delay, len(changed)))
-        logging.info("Total consumed resources: {} (cpu), {} (mem), {} (dr)".format(total_consumed_cpu, total_consumed_mem, total_consumed_dr))
+        # print("Max over-subscription: {} (cpu), {} (mem), {} (dr)".format(max_cpu_over, max_mem_over, max_dr_over))
+        # print("Total delay: {}, Num changed instances: {}".format(total_delay, len(changed)))
+        # print("Total consumed resources: {} (cpu), {} (mem), {} (dr)".format(total_consumed_cpu, total_consumed_mem,
+        #        total_consumed_dr))
+        logger.info("Max over-subscription: {} (cpu), {} (mem), {} (dr)".format(max_cpu_over, max_mem_over,
+                                                                                max_dr_over))
+        logger.info("Total delay: {}, Num changed instances: {}".format(total_delay, len(changed)))
+        logger.info("Total consumed resources: {} (cpu), {} (mem), {} (dr)".format(total_consumed_cpu,
+                                                                                   total_consumed_mem,
+                                                                                   total_consumed_dr))
 
     # calculate objective value; objectives & weights have to be identical to the MIP
     # lexicographical combination of all objectives
@@ -122,7 +126,7 @@ def objective_value(overlays, print_info=False):
         value = total_delay
 
     else:
-        logging.error("Objective {} unknown".format(obj))
+        logger.error("Objective {} unknown".format(obj))
         raise ValueError("Objective {} unknown".format(obj))
 
     return value
@@ -142,21 +146,22 @@ def solve(arg_nodes, arg_links, templates, prev_overlays, sources, fixed, arg_ob
     nodes = arg_nodes
     links = arg_links
     # copy previous instances (attributes like edges_in etc are not needed and not copied)
-    prev_instances = {Instance(i.component, i.location, i.src_flows) for ol in prev_overlays.values() for i in ol.instances}
+    prev_instances = {Instance(i.component, i.location, i.src_flows) for ol in prev_overlays.values()
+                      for i in ol.instances}
     obj = arg_obj
 
     # print input
-    print("Templates:", *templates, sep=" ")
-    print("Sources:", *sources, sep=" ")
-    print("Fixed instances:", *fixed, sep=" ")
-    print("Previous instances:", *prev_instances, sep=" ")
+    # print("Templates:", *templates, sep=" ")
+    # print("Sources:", *sources, sep=" ")
+    # print("Fixed instances:", *fixed, sep=" ")
+    # print("Previous instances:", *prev_instances, sep=" ")
 
     # pre-computation of shortest paths
     start_init = time.time()
     shortest_paths = sp.all_pairs_shortest_paths(nodes, links)
     init_time = time.time() - start_init
-    print("Time for pre-computation of shortest paths: {}s\n".format(init_time))
-    logging.info("Time for pre-computation of shortest paths: {}s\n".format(init_time))
+    # print("Time for pre-computation of shortest paths: {}s\n".format(init_time))
+    logger.info("Time for pre-computation of shortest paths: {}s\n".format(init_time))
 
     start_heuristic = time.time()
     # get total source data rate for each source component (for sorting the templates later)
@@ -166,34 +171,33 @@ def solve(arg_nodes, arg_links, templates, prev_overlays, sources, fixed, arg_ob
 
     # sort templates with decreasing weight: heaviest/most difficult templates get embedded first
     templates.sort(key=lambda t: t.weight(src_drs[t.source()]), reverse=True)
-    print("Templates sorted to start with heaviest:", *templates, sep=" ")
+    # print("Templates sorted to start with heaviest:", *templates, sep=" ")
 
     # initial solution
-    #print("\n----- Initial solution -----")
-    logging.info("----- Initial solution -----")
+    # print("\n----- Initial solution -----")
+    logger.info("----- Initial solution -----")
     overlays = heuristic.solve(arg_nodes, arg_links, templates, prev_overlays, sources, fixed, shortest_paths)
     obj_value = objective_value(overlays)
-    #print("Objective value of initial solution: {}".format(obj_value))
-    #print("Runtime for initial solution: {}".format(time.time() - start_heuristic))
-    logging.info("Objective value of initial solution: {}".format(obj_value))
-    logging.info("Runtime for initial solution: {}\n".format(time.time() - start_heuristic))
-
+    # print("Objective value of initial solution: {}".format(obj_value))
+    # print("Runtime for initial solution: {}".format(time.time() - start_heuristic))
+    logger.info("Objective value of initial solution: {}".format(obj_value))
+    logger.info("Runtime for initial solution: {}\n".format(time.time() - start_heuristic))
 
     # iterative improvement
     if len(nodes.ids) > 1:		# doesn't work for networks with just 1 node
-        #print("\n----- Iterative improvement -----")
-        logging.info("----- Iterative improvement -----")
+        # print("\n----- Iterative improvement -----")
+        logger.info("----- Iterative improvement -----")
         overlays = improvement.improve(arg_nodes, arg_links, templates, overlays, sources, fixed, shortest_paths)
         obj_value = objective_value(overlays)
         runtime = time.time() - start_heuristic
-        #print("Objective value after improvement: {}".format(obj_value))
-        #print("Heuristic runtime: {}s".format(runtime))
-        logging.info("Objective value after improvement: {}".format(obj_value))
-        logging.info("Heuristic runtime: {}s".format(runtime))
+        # print("Objective value after improvement: {}".format(obj_value))
+        # print("Heuristic runtime: {}s".format(runtime))
+        logger.info("Objective value after improvement: {}".format(obj_value))
+        logger.info("Heuristic runtime: {}s".format(runtime))
     else:
         runtime = time.time() - start_heuristic
-        #print("Skip iterative improvement for network with just 1 node")
-        logging.info("Skip iterative improvement for network with just 1 node")
+        # print("Skip iterative improvement for network with just 1 node")
+        logger.info("Skip iterative improvement for network with just 1 node")
 
     # calculate changed instances for writing result
     curr_instances = {i for ol in overlays.values() for i in ol.instances}

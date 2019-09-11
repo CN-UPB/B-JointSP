@@ -67,7 +67,6 @@ class Template:
 
                 continue
 
-
             # forward direction refers to the ingoing data rates and includes end components
             if direction == "forward":
                 # ingoing data rates in forward direction
@@ -90,13 +89,8 @@ class Template:
                 # resource consumption
                 cpu = j.cpu_req(in_dr_fwd + in_dr_bwd)
                 mem = j.mem_req(in_dr_fwd + in_dr_bwd)
-                
-                
                 total_cpu += cpu
                 total_mem += mem
-
-
-               
 
                 # compute outgoing data rates and store them in the dictionary (end components only have bwd outputs)
                 if j.end:
@@ -108,7 +102,6 @@ class Template:
                     for k_out in range(j.outputs):
                         out_dr[(j, "forward", k_out)] = out_drs[k_out]
             
-
             if direction == "backward":
                 # set ingoing data rates in forward direction to 0
                 in_dr_fwd = [0] * j.inputs
@@ -133,7 +126,6 @@ class Template:
                 total_cpu += cpu
                 total_mem += mem
                
-
                 # compute outgoing data rates and store them in the dictionary
                 out_drs = [j.outgoing_back(in_dr_bwd, k_out) for k_out in range(j.outputs_back)]
                 for k_out in range(j.outputs_back):
@@ -141,7 +133,6 @@ class Template:
 
         total_dr = sum(out_dr.values())
         print("{}'s weight: {}\n".format(self, total_cpu+total_mem+total_dr))
-        
         
         return total_cpu + total_mem + total_dr
 
