@@ -56,6 +56,22 @@ bjointsp -n parameters/networks/Abilene.graphml -t parameters/templates/fw1chain
 
 This should start the heuristic and create a result in the `results/bjointsp` directory in form of a yaml file.
 
+### Using ML Model
+
+All the ML models trained
+using both synthetic and real(nginx and haproxy) benchmarked datasets are made available
+with the B-JointSP. The models can be found under `src/bjointsp/ml_models/` folder.
+
+By default, xgboost model is being used in the heuristic. To change the model,
+either choose a pre-trained model or you can also train a new model and then,
+inside
+`src/bjointsp/template/component.py` check for the function `predict_cpu_req`
+and change the model path with your new model path. Also, make sure to change the scaler 
+which is also available inside the respective folders. For testing the B-JointSP with the new model,
+use the command below:
+ 
+ `bjointsp -n parameters/networks/Abilene.graphml -t parameters/templates/fw1chain.yaml -s parameters/sources/source0.yaml`
+
 ## Contact
 
 Lead developer: Stefan Schneider (@StefanUPB)
