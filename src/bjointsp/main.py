@@ -80,8 +80,8 @@ def parse_args():
 
 def main():
     args = parse_args()
-    place(args.network, args.template, args.sources, fixed_file=args.fixed, prev_embedding_file=args.prev, cpu=1, mem=10, dr=50)
-
+    place(args.network, args.template, args.sources, fixed_file=args.fixed, prev_embedding_file=args.prev, cpu=10,
+          mem=10, dr=50)
 
 
 if __name__ == '__main__':
