@@ -2,4 +2,4 @@
   vnf: vnf_user
   flows:
     - id: f1
-      data_rate: 1
+      data_rate: 350000 

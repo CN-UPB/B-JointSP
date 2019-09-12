@@ -1,3 +1,8 @@
+import pickle       # Pickle module for loading saved ML model
+import numpy as np
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.externals import joblib
+
 class Component:
     def __init__(self, name, type, stateful, inputs, outputs, cpu, mem, dr, vnf_delay=0, config=None):
         self.name = name
@@ -22,7 +27,7 @@ class Component:
         self.vnf_delay = vnf_delay
         self.dr = dr[0]
         self.dr_back = dr[1]
-        self.config = config		# config used by external apps/MANOs (describes image, ports, ...)
+        self.config = config       # config used by external apps/MANOs (describes image, ports, ...)
 
         total_inputs = self.inputs + self.inputs_back
 
@@ -69,19 +74,30 @@ class Component:
         print("\tforward: {} in, {} out, data rate: {}".format(self.inputs, self.outputs, self.dr))
         print("\tbackward: {} in, {} out, data rate: {}".format(self.inputs_back, self.outputs_back, self.dr_back))
 
+    # ML Prediction of CPU requirement based on the incoming data rates
+    def predict_cpu_req(data_rate):
+        scaler = joblib.load('src/bjointsp/ml_model/real_models/haproxy/haproxyScaler.save') 
+        data_rate = scaler.transform(np.float32([[data_rate]])) 
+        model = pickle.load(open('src/bjointsp/ml_model/real_models/haproxy/linear_haproxy_big_model.sav', 'rb'))
+        return model.predict(data_rate).item()
+
     # CPU requirement based on the incoming data rates and the specified function
     # ignore idle consumption if component specified in ignore_idle
     def cpu_req(self, incoming, ignore_idle=None):
         inputs = self.inputs + self.inputs_back
         if len(incoming) != inputs:
             raise ValueError("Mismatch of #incoming data rates and inputs")
-
-        requirement = self.cpu[-1]      # idle consumption
+        # load the model from disk
+        requirement = 0     # idle consumption
+        total_load = 0.0
         if self == ignore_idle:
             requirement = 0
         for i in range(inputs):
-            requirement += self.cpu[i] * incoming[i]    # linear function
-
+            total_load += np.array(incoming[i])
+        if not self.source: 
+            #requirement =  (2 **(total_load/100) - 1).item()
+            #requirement = self.cpu[i] * total_load  # Linear function (Original)
+            requirement = Component.predict_cpu_req(total_load)   # prediction of cpu requirement using the total load calculated 
         return requirement
 
     # memory requirement based on the incoming data rates and the specified function
@@ -98,6 +114,7 @@ class Component:
             requirement += self.mem[i] * incoming[i]    # linear function
 
         return requirement
+        return 0
 
     # outgoing data rate at specified output based on the incoming data rates
     def outgoing(self, in_vector, output):
