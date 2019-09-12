@@ -14,7 +14,7 @@ setup(name='bjointsp',
         "geopy",
         "pyyaml",
         "numpy",
-        "sklearn==0.20.0"
+        "scikit-learn==0.20.0"
     ],
     zip_safe=False,
     entry_points={
