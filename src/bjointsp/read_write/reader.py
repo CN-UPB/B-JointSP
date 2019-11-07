@@ -212,6 +212,42 @@ def read_fixed_instances(file, components):
     return fixed_instances
 
 
+# find and return component that matches the VNF name in the specified template. if not there, return None
+def get_component(template, name):
+    if name in [c.name for c in template.components]:
+        component = list(filter(lambda x: x.name == name, template.components))[0]
+        return component
+    return None
+
+
+# read previous placement from given networkx object
+# highly tailored to NetworkX objects created by https://github.com/RealVNF/coordination-simulation
+def read_prev_placement(networkx, templates):
+    # create empty overlays for all templates
+    prev_embedding = {}  # dict: template -> overlay
+    for t in templates:
+        prev_embedding[t] = Overlay(t, [], [])
+
+    # only read and recreate placement (not edges or flows)
+    for v in networkx.nodes.data():
+        node_id = v[0]
+        node_attr = v[1]
+        for vnf in node_attr['available_sf']:
+            # find component that matches the VNF name (in any of the templates)
+            for t in templates:
+                # use first matching component (assuming it's only in one template)
+                component = get_component(t, vnf)
+                if component is not None:
+                    # add new instance to overlay of corresponding template (source components need src_flows being set)
+                    if component.source:
+                        prev_embedding[t].instances.append(Instance(component, node_id, src_flows=[]))
+                    else:
+                        prev_embedding[t].instances.append(Instance(component, node_id))
+                    break
+
+    return prev_embedding
+
+
 # read previous embedding from yaml file
 def read_prev_embedding(file, templates, nodes, links):
     # create shortest paths
@@ -229,8 +265,8 @@ def read_prev_embedding(file, templates, nodes, links):
             # find component that matches the VNF name (in any of the templates)
             for t in templates:
                 # use first matching component (assuming it's only in one template)
-                if vnf["name"] in [c.name for c in t.components]:
-                    component = list(filter(lambda x: x.name == vnf["name"], t.components))[0]
+                component = get_component(t, vnf)
+                if component is not None:
                     # add new instance to overlay of corresponding template (source components need src_flows being set)
                     if component.source:
                         prev_embedding[t].instances.append(Instance(component, vnf["node"], src_flows=[]))
