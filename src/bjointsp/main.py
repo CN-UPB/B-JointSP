@@ -49,7 +49,9 @@ def place(network_file, template_file, source_file, fixed_file=None, prev_embedd
     if fixed_file is not None:
         fixed = reader.read_fixed_instances(fixed_file, components)
     prev_embedding = {}
-    if prev_embedding_file is not None:
+    if networkx is not None:
+        prev_embedding = reader.read_prev_placement(networkx, templates)
+    elif prev_embedding_file is not None:
         prev_embedding = reader.read_prev_embedding(prev_embedding_file, templates, nodes, links)
 
     input_files = [network_file, template_file, source_file, fixed_file, prev_embedding_file]
