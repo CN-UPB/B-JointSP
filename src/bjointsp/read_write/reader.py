@@ -47,10 +47,27 @@ def update_stateful(template):
                 j.stateful = False
 
 
+# same as read_network but use an already existing, annotated NetworkX object
+# this is highly tailored to the NetworkX objects created by https://github.com/RealVNF/coordination-simulation
+def read_networkx(networkx):
+    # read nodes: use same cap for cpu and mem (no distinction in the simulator)
+    node_ids = [v for v in networkx.nodes.keys()]
+    node_cpu = {v[0]: v[1]['cap'] for v in networkx.nodes.data()}
+    nodes = Nodes(node_ids, node_cpu, node_cpu.copy())
+
+    # read edges
+    link_ids = [e for e in networkx.edges.keys()]
+    link_dr = {(e[0], e[1]): e[2]['cap'] for e in networkx.edges.data()}
+    link_delay = {(e[0], e[1]): e[2]['delay'] for e in networkx.edges.data()}
+    links = Links(link_ids, link_dr, link_delay)
+
+    return nodes, links
+
+
 # read substrate network from graphml-file using NetworkX, set specified node and link capacities
 # IMPORTANT: for consistency with emulator, all node IDs are prefixed with "pop" *
 # *and have to be referenced as such (eg, in source locations)
-def read_network(file, cpu, mem, dr):
+def read_network(file, cpu=None, mem=None, dr=None):
     SPEED_OF_LIGHT = 299792458  # meter per second
     PROPAGATION_FACTOR = 0.77  # https://en.wikipedia.org/wiki/Propagation_delay
 
