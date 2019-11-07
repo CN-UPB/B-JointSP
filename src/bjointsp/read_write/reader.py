@@ -59,6 +59,14 @@ def read_networkx(networkx):
     link_ids = [e for e in networkx.edges.keys()]
     link_dr = {(e[0], e[1]): e[2]['cap'] for e in networkx.edges.data()}
     link_delay = {(e[0], e[1]): e[2]['delay'] for e in networkx.edges.data()}
+
+    # add reversed links for bidirectionality
+    for e in networkx.edges:
+        e_reversed = (e[1], e[0])
+        link_ids.append(e_reversed)
+        link_dr[e_reversed] = link_dr[e]
+        link_delay[e_reversed] = link_delay[e]
+
     links = Links(link_ids, link_dr, link_delay)
 
     return nodes, links
