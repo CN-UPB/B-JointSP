@@ -1,0 +1,72 @@
+# example of bidirectional chain: User <-> fw1 <-> web
+
+name: bidir_fw1chain
+
+# list of all involved VNFs (with at least a name and an image)
+vnfs:
+  - name: vnf_user
+    type: source
+    stateful: True
+    inputs_fwd: 0
+    inputs_bwd: 1
+    outputs_fwd: 1
+    outputs_bwd: 0
+    cpu: [0,0]
+    mem: [0,0]
+    vnf_delay: 0
+    out_fwd: []
+    out_bwd: []
+  - name: vnf_fw1
+    type: normal
+    stateful: False
+    inputs_fwd: 1
+    inputs_bwd: 1
+    outputs_fwd: 1
+    outputs_bwd: 1
+    cpu: [1,1,0]
+    mem: [1,1,0]
+    vnf_delay: 35
+    out_fwd:
+      - [1,0]
+    out_bwd:
+      - [1,0]
+  - name: vnf_web
+    type: end
+    stateful: False
+    inputs_fwd: 1
+    inputs_bwd: 0
+    outputs_fwd: 0
+    outputs_bwd: 1
+    cpu: [1,0]
+    mem: [1,0]
+    vnf_delay: 20
+    out_fwd: []
+    out_bwd:
+      - [1,0]
+
+# list of vLinks interconnecting the VNFs (with at least src and dest)
+vlinks:
+  - direction: forward
+    src: vnf_user
+    src_output: 0
+    dest: vnf_fw1
+    dest_input: 0
+    max_delay: 50
+  - direction: forward
+    src: vnf_fw1
+    src_output: 0
+    dest: vnf_web
+    dest_input: 0
+    max_delay: 50
+  - direction: backward
+    src: vnf_web
+    src_output: 0
+    dest: vnf_fw1
+    dest_input: 0
+    max_delay: 50
+  - direction: backward
+    src: vnf_fw1
+    src_output: 0
+    dest: vnf_user
+    dest_input: 0
+    max_delay: 50

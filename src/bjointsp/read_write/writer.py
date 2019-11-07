@@ -1,10 +1,10 @@
 import os
+import networkx as nx
 import yaml
+
 from collections import defaultdict
 from datetime import datetime
-import bjointsp.objective as objective
 from bjointsp.heuristic import shortest_paths as sp
-import networkx as nx
 
 
 # prepare result-file based on scenario-file: in results-subdirectory, using scenario name + timestamp (+ seed + event)
@@ -32,6 +32,21 @@ def create_result_file(input_files, subfolder, seed=None, seed_subfolder=False, 
     os.makedirs(os.path.dirname(result_path), exist_ok=True)  # create subdirectories if necessary
 
     return result_path
+
+
+# calculates end to end delay for every flow
+def save_end2end_delay(edges, links):
+    flow_delays = {}
+    for edge in edges:
+        for flow in edge.flows:
+            if flow.id not in flow_delays:
+                flow_delays[flow.id] = 0
+            # adding vnf_delays of destinations
+            flow_delays[flow.id] += edge.dest.component.vnf_delay
+            # adding path delay
+            # path delays are always the shortest paths and hence the same, so just adding the one at 0th index.
+            flow_delays[flow.id] += sp.path_delay(links, edge.paths[0])
+    return flow_delays
 
 
 # add variable values to the result dictionary
@@ -80,34 +95,58 @@ def save_heuristic_variables(result, changed_instances, instances, edges, nodes,
 
     # edge and link data rate, used links
     result["placement"]["flows"] = []
-    result["metrics"]["delays"] = []
-    result["metrics"]["total_delay"] = 0
+    result["metrics"]["path_delays"] = []
+    result["metrics"]["vnf_delays"] = []
+    result["metrics"]["total_path_delay"] = 0
+    result["metrics"]["total_vnf_delay"] = 0
+    result["metrics"]["max_endToEnd_delay"] = 0
+    result['metrics']["total_delay"] = 0
     result["placement"]["links"] = []
-    consumed_dr = defaultdict(int)		# default = 0
+    consumed_dr = defaultdict(int)  # default = 0
     for e in edges:
         for f in e.flows:
-            flow = {"arc": str(e.arc), "src_node": e.source.location, "dst_node": e.dest.location, "flow_id": f.id}
+            flow = {"arc": str(e.arc), "src_node": e.source.location, "dst_node": e.dest.location,
+                    "src_vnf": e.source.component.name, "dest_vnf": e.dest.component.name, "flow_id": f.id}
             result["placement"]["flows"].append(flow)
         for path in e.paths:
             # record edge delay: all flows take the same (shortest) path => take path delay
-            delay = {"src": e.arc.source.name, "dest": e.arc.dest.name, "src_node": e.source.location, "dest_node": e.dest.location, "delay": sp.path_delay(links, path)}
-            result["metrics"]["delays"].append(delay)
+            path_delay = {"src": e.arc.source.name, "dest": e.arc.dest.name, "src_node": e.source.location,
+                          "dest_node": e.dest.location, "path_delay": sp.path_delay(links, path)}
+            result["metrics"]["path_delays"].append(path_delay)
+            result["metrics"]["total_path_delay"] += sp.path_delay(links, path)
             result["metrics"]["total_delay"] += sp.path_delay(links, path)
 
             # go through nodes of each path and increase the dr of the traversed links
             for i in range(len(path) - 1):
                 # skip connections on the same node (no link used)
-                if path[i] != path[i+1]:
-                    consumed_dr[(path[i], path[i+1])] += e.flow_dr() / len(e.paths)
-                    link = {"arc": str(e.arc), "edge_src": e.source.location, "edge_dst": e.dest.location, "link_src": path[i], "link_dst": path[i+1]}
+                if path[i] != path[i + 1]:
+                    consumed_dr[(path[i], path[i + 1])] += e.flow_dr() / len(e.paths)
+                    link = {"arc": str(e.arc), "edge_src": e.source.location, "edge_dst": e.dest.location,
+                            "link_src": path[i], "link_dst": path[i + 1]}
                     result["placement"]["links"].append(link)
+
+    # record VNF delay
+    for i in instances:
+        vnf_delay = {"vnf": i.component.name, "vnf_delay": i.component.vnf_delay}
+        result["metrics"]["vnf_delays"].append(vnf_delay)
+        result["metrics"]["total_vnf_delay"] += i.component.vnf_delay
+    # record total delay = link + vnf delay
+    result["metrics"]["total_delay"] = result["metrics"]["total_path_delay"] + result["metrics"]["total_vnf_delay"]
+
+    # record max end-to-end delay
+    endToEnd = save_end2end_delay(edges, links)
+    if endToEnd:
+        result["metrics"]["max_endToEnd_delay"] = max(endToEnd.values())
+    # for an empty placement, there is no end to end delay
+    else:
+        result["metrics"]["max_endToEnd_delay"] = 0
 
     # link capacity violations
     result["placement"]["dr_oversub"] = []
     max_dr = 0
     for l in links.ids:
         if links.dr[l] < consumed_dr[l]:
-            result["placement"]["dr_oversub"].append({"link": l})
+            result["placement"]["dr_oversub"].append({"link": list(l)})
             if consumed_dr[l] - links.dr[l] > max_dr:
                 max_dr = consumed_dr[l] - links.dr[l]
     result["metrics"]["max_dr_oversub"] = max_dr
@@ -116,7 +155,7 @@ def save_heuristic_variables(result, changed_instances, instances, edges, nodes,
 
 
 def write_heuristic_result(runtime, obj_value, changed, overlays, input_files, obj, nodes, links, seed, seed_subfolder):
-    result_file = create_result_file(input_files, "bjointsp", seed=seed, seed_subfolder=seed_subfolder, obj=obj)
+    result_file = create_result_file(input_files[0:4], "bjointsp", seed=seed, seed_subfolder=seed_subfolder, obj=obj)
 
     instances, edges = set(), set()
     for ol in overlays:
@@ -147,10 +186,12 @@ def write_heuristic_result(runtime, obj_value, changed, overlays, input_files, o
     result["input"]["num_nodes"] = network.number_of_nodes()
     result["input"]["num_edges"] = network.number_of_edges()
     with open(input_files[1]) as f:
-        service = yaml.load(f)
+        service = yaml.load(f, yaml.SafeLoader)
         result["input"]["num_vnfs"] = len(service["vnfs"])
     with open(input_files[2]) as f:
-        sources = yaml.load(f)
+        sources = yaml.load(f, yaml.SafeLoader)
+        if sources is None:
+            sources = []
         result["input"]["num_sources"] = len(sources)
 
     result = save_heuristic_variables(result, changed, instances, edges, nodes, links)

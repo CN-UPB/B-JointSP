@@ -1,5 +1,5 @@
 class Component:
-    def __init__(self, name, type, stateful, inputs, outputs, cpu, mem, dr, config=None):
+    def __init__(self, name, type, stateful, inputs, outputs, cpu, mem, dr, vnf_delay=0, config=None):
         self.name = name
         if type == "source":
             self.source = True
@@ -19,11 +19,13 @@ class Component:
         self.outputs_back = outputs[1]
         self.cpu = cpu      # function of forward and backward ingoing data rates
         self.mem = mem
+        self.vnf_delay = vnf_delay
         self.dr = dr[0]
         self.dr_back = dr[1]
         self.config = config		# config used by external apps/MANOs (describes image, ports, ...)
 
         total_inputs = self.inputs + self.inputs_back
+
         if len(self.cpu) != total_inputs + 1: # always need idle consumption (can be 0)
             raise ValueError("Inputs and CPU function mismatch or missing idle consumption")
         if len(self.mem) != total_inputs + 1:

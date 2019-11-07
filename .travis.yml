@@ -6,6 +6,7 @@ install:
     - python setup.py install
     
 script:
-    - bjointsp -n src/bjointsp/parameters/networks/Abilene.graphml -t src/bjointsp/parameters/templates/fw1chain.yaml -s src/bjointsp/parameters/sources/source0.yaml
-    - bjointsp -n src/bjointsp/parameters/networks/BtEurope.graphml -t src/bjointsp/parameters/templates/fw3chain.yaml -s src/bjointsp/parameters/sources/sources04.yaml
+    - bjointsp -n parameters/networks/Abilene.graphml -t parameters/templates/fw1chain.yaml -s parameters/sources/source0.yaml
+    - bjointsp -n parameters/networks/BtEurope.graphml -t parameters/templates/fw3chain.yaml -s parameters/sources/sources04.yaml
+    - bjointsp -n parameters/networks/Abilene.graphml -t parameters/templates/bidir_fw1chain.yaml -s parameters/sources/source0.yaml
     

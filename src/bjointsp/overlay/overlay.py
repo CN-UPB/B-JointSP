@@ -79,7 +79,8 @@ class Overlay:
                 curr_instances = [i for i in self.instances if i.component == j]
             # add corresponding instances with ingoing edges in the curr direction or no edges (removed by heuristic)
             else:
-                curr_instances = [i for i in self.instances if i.component == j and (i.used(direction, self) or not i.edges_in)]
+                curr_instances = [i for i in self.instances if i.component == j and (i.used(direction, self)
+                                                                                     or not i.edges_in)]
             instance_order += curr_instances
 
             # add ingoing edges of current direction to edge_order
