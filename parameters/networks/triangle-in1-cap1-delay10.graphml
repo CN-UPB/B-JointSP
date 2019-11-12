@@ -73,30 +73,24 @@
     <data key="d27">0</data>
     <node id="0">
       <data key="d28">1</data>
-      <data key="d29">40.71427</data>
       <data key="d30">United States</data>
       <data key="d31">0</data>
-      <data key="d32">-74.00597</data>
       <data key="d33">New York</data>
       <data key="d39">Ingress</data>
       <data key="d40">1</data>
     </node>
     <node id="1">
       <data key="d28">1</data>
-      <data key="d29">41.85003</data>
       <data key="d30">United States</data>
       <data key="d31">1</data>
-      <data key="d32">-87.65005</data>
       <data key="d33">Chicago</data>
       <data key="d39">Normal</data>
       <data key="d40">1</data>
     </node>
     <node id="2">
       <data key="d28">1</data>
-      <data key="d29">38.89511</data>
       <data key="d30">United States</data>
       <data key="d31">2</data>
-      <data key="d32">-77.03637</data>
       <data key="d33">Washington DC</data>
       <data key="d39">Normal</data>
       <data key="d40">1</data>
