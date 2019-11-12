@@ -122,9 +122,9 @@ def read_network(file, cpu=None, mem=None, dr=None):
             n1_lat, n1_long = n1.get("Latitude"), n1.get("Longitude")
             n2_lat, n2_long = n2.get("Latitude"), n2.get("Longitude")
             distance = vincenty((n1_lat, n1_long), (n2_lat, n2_long)).meters  # in meters
-            delay = np.around((distance / SPEED_OF_LIGHT * 1000) * PROPAGATION_FACTOR)  # in milliseconds
+            delay = (distance / SPEED_OF_LIGHT * 1000) * PROPAGATION_FACTOR  # in milliseconds
         # round delay to int using np.around for consistency with emulator
-        link_delay[("pop{}".format(e[0]), "pop{}".format(e[1]))] = int(delay)
+        link_delay[("pop{}".format(e[0]), "pop{}".format(e[1]))] = int(np.around(delay))
 
     # add reversed links for bidirectionality
     for e in network.edges:
