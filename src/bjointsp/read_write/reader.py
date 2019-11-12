@@ -47,10 +47,35 @@ def update_stateful(template):
                 j.stateful = False
 
 
+# same as read_network but use an already existing, annotated NetworkX object
+# this is highly tailored to the NetworkX objects created by https://github.com/RealVNF/coordination-simulation
+def read_networkx(networkx):
+    # read nodes: use same cap for cpu and mem (no distinction in the simulator)
+    node_ids = [v for v in networkx.nodes.keys()]
+    node_cpu = {v[0]: v[1]['cap'] for v in networkx.nodes.data()}
+    nodes = Nodes(node_ids, node_cpu, node_cpu.copy())
+
+    # read edges
+    link_ids = [e for e in networkx.edges.keys()]
+    link_dr = {(e[0], e[1]): e[2]['cap'] for e in networkx.edges.data()}
+    link_delay = {(e[0], e[1]): e[2]['delay'] for e in networkx.edges.data()}
+
+    # add reversed links for bidirectionality
+    for e in networkx.edges:
+        e_reversed = (e[1], e[0])
+        link_ids.append(e_reversed)
+        link_dr[e_reversed] = link_dr[e]
+        link_delay[e_reversed] = link_delay[e]
+
+    links = Links(link_ids, link_dr, link_delay)
+
+    return nodes, links
+
+
 # read substrate network from graphml-file using NetworkX, set specified node and link capacities
 # IMPORTANT: for consistency with emulator, all node IDs are prefixed with "pop" *
 # *and have to be referenced as such (eg, in source locations)
-def read_network(file, cpu, mem, dr):
+def read_network(file, cpu=None, mem=None, dr=None):
     SPEED_OF_LIGHT = 299792458  # meter per second
     PROPAGATION_FACTOR = 0.77  # https://en.wikipedia.org/wiki/Propagation_delay
 
@@ -195,6 +220,42 @@ def read_fixed_instances(file, components):
     return fixed_instances
 
 
+# find and return component that matches the VNF name in the specified template. if not there, return None
+def get_component(template, name):
+    if name in [c.name for c in template.components]:
+        component = list(filter(lambda x: x.name == name, template.components))[0]
+        return component
+    return None
+
+
+# read previous placement from given networkx object
+# highly tailored to NetworkX objects created by https://github.com/RealVNF/coordination-simulation
+def read_prev_placement(networkx, templates):
+    # create empty overlays for all templates
+    prev_embedding = {}  # dict: template -> overlay
+    for t in templates:
+        prev_embedding[t] = Overlay(t, [], [])
+
+    # only read and recreate placement (not edges or flows)
+    for v in networkx.nodes.data():
+        node_id = v[0]
+        node_attr = v[1]
+        for vnf in node_attr['available_sf']:
+            # find component that matches the VNF name (in any of the templates)
+            for t in templates:
+                # use first matching component (assuming it's only in one template)
+                component = get_component(t, vnf)
+                if component is not None:
+                    # add new instance to overlay of corresponding template (source components need src_flows being set)
+                    if component.source:
+                        prev_embedding[t].instances.append(Instance(component, node_id, src_flows=[]))
+                    else:
+                        prev_embedding[t].instances.append(Instance(component, node_id))
+                    break
+
+    return prev_embedding
+
+
 # read previous embedding from yaml file
 def read_prev_embedding(file, templates, nodes, links):
     # create shortest paths
@@ -212,8 +273,8 @@ def read_prev_embedding(file, templates, nodes, links):
             # find component that matches the VNF name (in any of the templates)
             for t in templates:
                 # use first matching component (assuming it's only in one template)
-                if vnf["name"] in [c.name for c in t.components]:
-                    component = list(filter(lambda x: x.name == vnf["name"], t.components))[0]
+                component = get_component(t, vnf)
+                if component is not None:
                     # add new instance to overlay of corresponding template (source components need src_flows being set)
                     if component.source:
                         prev_embedding[t].instances.append(Instance(component, vnf["node"], src_flows=[]))

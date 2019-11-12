@@ -20,7 +20,7 @@ obj = objective.COMBINED
 
 # solve with heuristic; interface to place-emu: triggers placement
 def place(network_file, template_file, source_file, fixed_file=None, prev_embedding_file=None, cpu=None, mem=None,
-          dr=None):
+          dr=None, networkx=None):
     seed = random.randint(0, 9999)
     seed_subfolder = False
     random.seed(seed)
@@ -33,7 +33,12 @@ def place(network_file, template_file, source_file, fixed_file=None, prev_embedd
                                                                             timestamp, seed),
                         level=logging.DEBUG, format="%(asctime)s(%(levelname)s):\t%(message)s", datefmt="%H:%M:%S")
 
-    nodes, links = reader.read_network(network_file, cpu, mem, dr)
+    # if a NetworkX object is passed, use that - including all of its capacities, delays, etc
+    if networkx is not None:
+        nodes, links = reader.read_networkx(networkx)
+    else:
+        nodes, links = reader.read_network(network_file, cpu, mem, dr)
+
     template, source_components = reader.read_template(template_file, return_src_components=True)
     templates = [template]
     # print(template)
@@ -44,7 +49,9 @@ def place(network_file, template_file, source_file, fixed_file=None, prev_embedd
     if fixed_file is not None:
         fixed = reader.read_fixed_instances(fixed_file, components)
     prev_embedding = {}
-    if prev_embedding_file is not None:
+    if networkx is not None:
+        prev_embedding = reader.read_prev_placement(networkx, templates)
+    elif prev_embedding_file is not None:
         prev_embedding = reader.read_prev_embedding(prev_embedding_file, templates, nodes, links)
 
     input_files = [network_file, template_file, source_file, fixed_file, prev_embedding_file]
