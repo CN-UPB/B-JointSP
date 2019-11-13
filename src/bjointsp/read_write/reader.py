@@ -112,13 +112,17 @@ def read_network(file, cpu=None, mem=None, dr=None):
 
     # calculate link delay based on geo positions of nodes; duplicate links for bidirectionality
     link_delay = {}
-    for e in network.edges:
-        n1 = network.nodes(data=True)[e[0]]
-        n2 = network.nodes(data=True)[e[1]]
-        n1_lat, n1_long = n1.get("Latitude"), n1.get("Longitude")
-        n2_lat, n2_long = n2.get("Latitude"), n2.get("Longitude")
-        distance = vincenty((n1_lat, n1_long), (n2_lat, n2_long)).meters  # in meters
-        delay = (distance / SPEED_OF_LIGHT * 1000) * PROPAGATION_FACTOR  # in milliseconds
+    for e in network.edges(data=True):
+        delay = 0
+        if e[2].get("LinkDelay"):
+            delay = e[2]['LinkDelay']
+        else:
+            n1 = network.nodes(data=True)[e[0]]
+            n2 = network.nodes(data=True)[e[1]]
+            n1_lat, n1_long = n1.get("Latitude"), n1.get("Longitude")
+            n2_lat, n2_long = n2.get("Latitude"), n2.get("Longitude")
+            distance = vincenty((n1_lat, n1_long), (n2_lat, n2_long)).meters  # in meters
+            delay = (distance / SPEED_OF_LIGHT * 1000) * PROPAGATION_FACTOR  # in milliseconds
         # round delay to int using np.around for consistency with emulator
         link_delay[("pop{}".format(e[0]), "pop{}".format(e[1]))] = int(np.around(delay))
 
@@ -149,7 +153,8 @@ def read_template(file, return_src_components=False):
             # Getting the VNF delay from YAML, checking to see if key exists, otherwise set default 0
             vnf_delay = vnf.get("vnf_delay", 0)
             # Check whether vnf is source and has cpu and mem requirements.
-            if (vnf["type"] == "source") and ((len(vnf["cpu"]) == 1 and (vnf["cpu"][0] > 0))or (len(vnf["mem"]) == 1 and (vnf["mem"][0] > 0))):
+            if (vnf["type"] == "source") and (
+                    (len(vnf["cpu"]) == 1 and (vnf["cpu"][0] > 0)) or (len(vnf["mem"]) == 1 and (vnf["mem"][0] > 0))):
                 logger.info("\tSource component {} has CPU:{} and MEM:{} requirements."
                             " Check the template file".format(vnf['name'], vnf['cpu'], vnf['mem']))
                 # print ("Source component {} has CPU:{} and MEM:{} requirements.
