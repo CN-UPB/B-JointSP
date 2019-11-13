@@ -183,7 +183,7 @@ def read_template(file, return_src_components=False):
 def read_sources(file, source_components):
     sources = []
     with open(file, "r") as sources_file:
-        yaml_file = yaml.load(sources_file, yaml.SafeLoader)
+        yaml_file = yaml.load(sources_file, yaml.Loader)
 
         # special case: no sources
         if yaml_file is None:
