@@ -13,7 +13,8 @@ setup(name='bjointsp',
         "networkx",
         "geopy",
         "pyyaml",
-        "numpy"
+        "numpy",
+        "joblib"
     ],
     zip_safe=False,
     entry_points={

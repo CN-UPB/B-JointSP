@@ -1,8 +1,8 @@
-import numpy as np
-from sklearn.externals import joblib
+import joblib
 
-
+# default: False; if true, use ML models to predict CPU requirements. see code below for details!
 use_ml = True
+
 
 class Component:
     def __init__(self, name, type, stateful, inputs, outputs, cpu, mem, dr, vnf_delay=0, config=None):
