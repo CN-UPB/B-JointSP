@@ -1,5 +1,13 @@
-bjointsp -n parameters/networks/Abilene.graphml -t parameters/templates/web.yaml -s parameters/sources/web_eval/s0.yaml
-bjointsp -n parameters/networks/Abilene.graphml -t parameters/templates/web.yaml -s parameters/sources/web_eval/s01.yaml
-bjointsp -n parameters/networks/Abilene.graphml -t parameters/templates/web.yaml -s parameters/sources/web_eval/s012.yaml
-bjointsp -n parameters/networks/Abilene.graphml -t parameters/templates/web.yaml -s parameters/sources/web_eval/s0123.yaml
-bjointsp -n parameters/networks/Abilene.graphml -t parameters/templates/web.yaml -s parameters/sources/web_eval/s01234.yaml
+# multi source
+#bjointsp -n parameters/networks/Abilene.graphml -t parameters/templates/web.yaml -s parameters/sources/synth_data/single_source_dr1/s0.yaml
+#bjointsp -n parameters/networks/Abilene.graphml -t parameters/templates/web.yaml -s parameters/sources/synth_data/single_source_dr1/s01.yaml
+#bjointsp -n parameters/networks/Abilene.graphml -t parameters/templates/web.yaml -s parameters/sources/synth_data/single_source_dr1/s012.yaml
+#bjointsp -n parameters/networks/Abilene.graphml -t parameters/templates/web.yaml -s parameters/sources/synth_data/single_source_dr1/s0123.yaml
+#bjointsp -n parameters/networks/Abilene.graphml -t parameters/templates/web.yaml -s parameters/sources/synth_data/single_source_dr1/s01234.yaml
+
+# multi flow
+bjointsp -n parameters/networks/Abilene.graphml -t parameters/templates/web.yaml -s parameters/sources/synth_data/single_source_dr1/s0-f1.yaml
+bjointsp -n parameters/networks/Abilene.graphml -t parameters/templates/web.yaml -s parameters/sources/synth_data/single_source_dr1/s0-f2.yaml
+bjointsp -n parameters/networks/Abilene.graphml -t parameters/templates/web.yaml -s parameters/sources/synth_data/single_source_dr1/s0-f3.yaml
+bjointsp -n parameters/networks/Abilene.graphml -t parameters/templates/web.yaml -s parameters/sources/synth_data/single_source_dr1/s0-f4.yaml
+bjointsp -n parameters/networks/Abilene.graphml -t parameters/templates/web.yaml -s parameters/sources/synth_data/single_source_dr1/s0-f5.yaml
