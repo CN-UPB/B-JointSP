@@ -83,10 +83,10 @@ class Component:
     @staticmethod
     def load_ml_models():
         # TODO: make configurable via CLI or adjust manually
-        ml_path = 'parameters/ml/synth_data/'
+        ml_path = 'parameters/ml/web3_small/'
         ml_models = {
-            'linear': joblib.load(ml_path + 'linear.joblib'),
-            'boosting': joblib.load(ml_path + 'boosting.joblib')
+            'linear': joblib.load(ml_path + 'LinearRegression.joblib'),
+            'boosting': joblib.load(ml_path + 'GradientBoostingRegressor.joblib')
         }
         print("Successfully loaded ML models: {}".format(ml_models.keys()))
         return ml_models
@@ -102,6 +102,7 @@ class Component:
             requirement = 0.8
         elif model == 'true':
             # true requirement of synth data
+            # WARNING: only for this specific synthetic data function that I configured
             requirement = (1.0/100.0) * (2**total_dr - 1)
         elif model == 'linear':
             requirement = self.ml_models['linear'].predict([[total_dr]]).item()
@@ -131,7 +132,7 @@ class Component:
 
         # predict requirements using ML if enabled
         if use_ml:
-            requirement = self.predict_cpu_req('true', total_dr)
+            requirement = self.predict_cpu_req('boosting', total_dr)
 
         return requirement
 
