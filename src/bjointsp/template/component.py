@@ -83,13 +83,34 @@ class Component:
     @staticmethod
     def load_ml_models():
         # TODO: make configurable via CLI or adjust manually
-        ml_path = '../../../parameters/ml/synth_data/'
+        ml_path = 'parameters/ml/synth_data/'
         ml_models = {
             'linear': joblib.load(ml_path + 'linear.joblib'),
             'boosting': joblib.load(ml_path + 'boosting.joblib')
         }
         print("Successfully loaded ML models: {}".format(ml_models.keys()))
         return ml_models
+
+    # predict cpu requirement using ML
+    # TODO: make configurable or adjust manually for each model
+    def predict_cpu_req(self, model, total_dr):
+        # sources don't require cpu
+        if self.source:
+            return 0
+
+        if model == 'fixed':
+            requirement = 0.8
+        elif model == 'true':
+            # true requirement of synth data
+            requirement = (1.0/100.0) * (2**total_dr - 1)
+        elif model == 'linear':
+            requirement = self.ml_models['linear'].predict([[total_dr]]).item()
+        else:
+            raise ValueError("Model {} does not match the available prediction models".format(model))
+        # print("CPU prediction for data rate {}: {} (will be >=0)".format(total_dr, requirement))
+
+        # avoid negative predicted CPU (may happen, eg, for linear regression)
+        return max(requirement, 0)
 
     # CPU requirement based on the incoming data rates and the specified function
     # ignore idle consumption if component specified in ignore_idle
@@ -107,12 +128,8 @@ class Component:
             total_dr += incoming[i]
 
         # predict requirements using ML if enabled
-        # TODO: make configurable or adjust manually for each model
         if use_ml:
-            # requirement = 0.8             # fixed requirement
-            # requirement = (1.0/100.0) * (2**total_dr - 1)       # true requirement of synth data
-            requirement = self.ml_models['linear'].predict(total_dr).item()         # ml prediction
-            print("CPU prediction for data rate {}: {}".format(total_dr, requirement))
+            requirement = self.predict_cpu_req('fixed', total_dr)
 
         return requirement
 

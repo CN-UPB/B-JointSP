@@ -14,6 +14,7 @@ setup(name='bjointsp',
         "geopy",
         "pyyaml",
         "numpy",
+        "scikit-learn==0.21.3",
         "joblib"
     ],
     zip_safe=False,
