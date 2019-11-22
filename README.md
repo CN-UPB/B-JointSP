@@ -14,8 +14,6 @@ If you use B-JointSP in your research, please cite our work:
 
 ### Changelog
 
-* Nov 2019: Added auxiliary scripts that are useful for evaluation
-* Oct 2019: Added support for handling NetworkX objects directly as an alternative to reading network and placement from file
 * Feb 2019: Added end-to-end delay as result metric (not just total delay)
 * Feb 2019: Added VNF delays to templates and to calculation of total delay
 
