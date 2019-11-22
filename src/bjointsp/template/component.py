@@ -1,3 +1,9 @@
+import numpy as np
+from sklearn.externals import joblib
+
+
+use_ml = True
+
 class Component:
     def __init__(self, name, type, stateful, inputs, outputs, cpu, mem, dr, vnf_delay=0, config=None):
         self.name = name
@@ -23,6 +29,9 @@ class Component:
         self.dr = dr[0]
         self.dr_back = dr[1]
         self.config = config		# config used by external apps/MANOs (describes image, ports, ...)
+
+        if use_ml:
+            self.ml_models = Component.load_ml_models()
 
         total_inputs = self.inputs + self.inputs_back
 
@@ -69,6 +78,19 @@ class Component:
         print("\tforward: {} in, {} out, data rate: {}".format(self.inputs, self.outputs, self.dr))
         print("\tbackward: {} in, {} out, data rate: {}".format(self.inputs_back, self.outputs_back, self.dr_back))
 
+    # load ML models into memory so that they can be used quickly for prediction
+    # return dict with loaded models
+    @staticmethod
+    def load_ml_models():
+        # TODO: make configurable via CLI or adjust manually
+        ml_path = '../../../parameters/ml/synth_data/'
+        ml_models = {
+            'linear': joblib.load(ml_path + 'linear.joblib'),
+            'boosting': joblib.load(ml_path + 'boosting.joblib')
+        }
+        print("Successfully loaded ML models: {}".format(ml_models.keys()))
+        return ml_models
+
     # CPU requirement based on the incoming data rates and the specified function
     # ignore idle consumption if component specified in ignore_idle
     def cpu_req(self, incoming, ignore_idle=None):
@@ -76,11 +98,18 @@ class Component:
         if len(incoming) != inputs:
             raise ValueError("Mismatch of #incoming data rates and inputs")
 
+        total_dr = 0
         requirement = self.cpu[-1]      # idle consumption
         if self == ignore_idle:
             requirement = 0
         for i in range(inputs):
             requirement += self.cpu[i] * incoming[i]    # linear function
+            total_dr += incoming[i]
+
+        # predict requirements using ML if enabled
+        # TODO: make configurable or adjust manually for each model
+        if use_ml:
+            requirement = self.ml_models['linear'].predict(total_dr).item()
 
         return requirement
 
@@ -90,6 +119,10 @@ class Component:
         inputs = self.inputs + self.inputs_back
         if len(incoming) != inputs:
             raise ValueError("Mismatch of #incoming data rates and inputs")
+
+        # disable for ML for now
+        if use_ml:
+            return 0
 
         requirement = self.mem[-1]  # idle consumption
         if self == ignore_idle:
