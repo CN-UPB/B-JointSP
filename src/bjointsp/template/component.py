@@ -105,6 +105,8 @@ class Component:
             requirement = (1.0/100.0) * (2**total_dr - 1)
         elif model == 'linear':
             requirement = self.ml_models['linear'].predict([[total_dr]]).item()
+        elif model == 'boosting':
+            requirement = self.ml_models['boosting'].predict([[total_dr]]).item()
         else:
             raise ValueError("Model {} does not match the available prediction models".format(model))
         # print("CPU prediction for data rate {}: {} (will be >=0)".format(total_dr, requirement))
@@ -129,7 +131,7 @@ class Component:
 
         # predict requirements using ML if enabled
         if use_ml:
-            requirement = self.predict_cpu_req('fixed', total_dr)
+            requirement = self.predict_cpu_req('true', total_dr)
 
         return requirement
 
