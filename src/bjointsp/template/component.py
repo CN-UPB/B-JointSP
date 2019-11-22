@@ -109,7 +109,10 @@ class Component:
         # predict requirements using ML if enabled
         # TODO: make configurable or adjust manually for each model
         if use_ml:
-            requirement = self.ml_models['linear'].predict(total_dr).item()
+            # requirement = 0.8             # fixed requirement
+            # requirement = (1.0/100.0) * (2**total_dr - 1)       # true requirement of synth data
+            requirement = self.ml_models['linear'].predict(total_dr).item()         # ml prediction
+            print("CPU prediction for data rate {}: {}".format(total_dr, requirement))
 
         return requirement
 
