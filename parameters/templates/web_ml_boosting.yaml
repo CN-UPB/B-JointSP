@@ -38,7 +38,7 @@ vnfs:
     inputs_bwd: 0
     outputs_fwd: 1
     outputs_bwd: 0
-    ml_model_path: "parameters/ml/web3_small/LinearRegression.joblib"
+    ml_model_path: "parameters/ml/web3_small/GradientBoostingRegressor.joblib"
     cpu: [1,0]
     mem: [1,0]
     vnf_delay: 10
@@ -52,7 +52,7 @@ vnfs:
     inputs_bwd: 0
     outputs_fwd: 0
     outputs_bwd: 0
-    ml_model_path: "parameters/ml/web1_small/LinearRegression.joblib"
+    ml_model_path: "parameters/ml/web1_small/GradientBoostingRegressor.joblib"
     cpu: [1,0]
     mem: [1,0]
     vnf_delay: 10
