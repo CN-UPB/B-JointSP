@@ -1,5 +1,6 @@
 # example chain template: User -> LB (HAProxy) -> Cache (Squid) -> Web (Nginx)
-name: fw2-chain
+# all VNFs have a fixed resource consumption of 0.8 CPU
+name: web_fixed
 vnfs:
   - name: vnf_user
     type: source
@@ -22,7 +23,8 @@ vnfs:
     outputs_bwd: 0
     # new optional field, specifying the ML model for predicting resource requirements
     # replaces the cpu and mem coefficients specified below (still required)
-    ml_model_name: fixed
+    # instead of path, "fixed" or "true" can be used
+    ml_model_path: fixed
     cpu: [1,0]
     mem: [1,0]
     vnf_delay: 10
@@ -36,7 +38,7 @@ vnfs:
     inputs_bwd: 0
     outputs_fwd: 1
     outputs_bwd: 0
-    ml_model_name: fixed
+    ml_model_path: fixed
     cpu: [1,0]
     mem: [1,0]
     vnf_delay: 10
@@ -50,7 +52,7 @@ vnfs:
     inputs_bwd: 0
     outputs_fwd: 0
     outputs_bwd: 0
-    ml_model_name: fixed
+    ml_model_path: fixed
     cpu: [1,0]
     mem: [1,0]
     vnf_delay: 10

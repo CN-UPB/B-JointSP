@@ -3,7 +3,7 @@ import joblib
 
 class Component:
     def __init__(self, name, type, stateful, inputs, outputs, cpu, mem, dr, vnf_delay=0, config=None,
-                 ml_model_name=None, ml_model_path=None):
+                 ml_model_path=None):
         self.name = name
         if type == "source":
             self.source = True
@@ -28,10 +28,13 @@ class Component:
         self.dr_back = dr[1]
         self.config = config		# config used by external apps/MANOs (describes image, ports, ...)
 
-        self.ml_model_name = ml_model_name
         self.ml_model = None
         if ml_model_path is not None:
-            self.ml_model = joblib.load(ml_model_path)
+            # special cases for fixed or true resource requirements
+            if ml_model_path == 'fixed' or ml_model_path == 'true':
+                self.ml_model = ml_model_path
+            else:
+                self.ml_model = joblib.load(ml_model_path)
             print("Successfully loaded model {} for VNF {}.".format(ml_model_path, name))
 
         total_inputs = self.inputs + self.inputs_back
@@ -85,9 +88,9 @@ class Component:
         if self.source:
             return 0
 
-        if self.ml_model_name == 'fixed':
+        if self.ml_model == 'fixed':
             requirement = 0.8
-        elif self.ml_model_name == 'true':
+        elif self.ml_model == 'true':
             # true requirement of synth data
             # WARNING: only for this specific synthetic data function that I configured for my evaluation
             requirement = (1.0/100.0) * (2**total_dr - 1)
@@ -115,7 +118,7 @@ class Component:
             total_dr += incoming[i]
 
         # predict requirements using ML if enabled
-        if self.ml_model_name is not None or self.ml_model is not None:
+        if self.ml_model is not None:
             requirement = self.predict_cpu_req(total_dr)
 
         return requirement
@@ -128,7 +131,7 @@ class Component:
             raise ValueError("Mismatch of #incoming data rates and inputs")
 
         # disable for ML for now
-        if self.ml_model is not None or self.ml_model_name is not None:
+        if self.ml_model is not None:
             return 0
 
         requirement = self.mem[-1]  # idle consumption
