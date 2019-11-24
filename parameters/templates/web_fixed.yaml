@@ -1,4 +1,4 @@
-# example chain template: User -> fw2 -> fw1 -> Web
+# example chain template: User -> LB (HAProxy) -> Cache (Squid) -> Web (Nginx)
 name: fw2-chain
 vnfs:
   - name: vnf_user
@@ -20,6 +20,9 @@ vnfs:
     inputs_bwd: 0
     outputs_fwd: 1
     outputs_bwd: 0
+    # new optional field, specifying the ML model for predicting resource requirements
+    # replaces the cpu and mem coefficients specified below (still required)
+    ml_model_name: fixed
     cpu: [1,0]
     mem: [1,0]
     vnf_delay: 10
@@ -33,6 +36,7 @@ vnfs:
     inputs_bwd: 0
     outputs_fwd: 1
     outputs_bwd: 0
+    ml_model_name: fixed
     cpu: [1,0]
     mem: [1,0]
     vnf_delay: 10
@@ -46,6 +50,7 @@ vnfs:
     inputs_bwd: 0
     outputs_fwd: 0
     outputs_bwd: 0
+    ml_model_name: fixed
     cpu: [1,0]
     mem: [1,0]
     vnf_delay: 10

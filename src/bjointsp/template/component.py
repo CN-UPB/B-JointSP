@@ -1,11 +1,9 @@
 import joblib
 
-# default: False; if true, use ML models to predict CPU requirements. see code below for details!
-use_ml = True
-
 
 class Component:
-    def __init__(self, name, type, stateful, inputs, outputs, cpu, mem, dr, vnf_delay=0, config=None):
+    def __init__(self, name, type, stateful, inputs, outputs, cpu, mem, dr, vnf_delay=0, config=None,
+                 ml_model_name=None, ml_model_path=None):
         self.name = name
         if type == "source":
             self.source = True
@@ -30,8 +28,11 @@ class Component:
         self.dr_back = dr[1]
         self.config = config		# config used by external apps/MANOs (describes image, ports, ...)
 
-        if use_ml:
-            self.ml_models = Component.load_ml_models()
+        self.ml_model_name = ml_model_name
+        self.ml_model = None
+        if ml_model_path is not None:
+            self.ml_model = joblib.load(ml_model_path)
+            print("Successfully loaded model {} for VNF {}.".format(ml_model_path, name))
 
         total_inputs = self.inputs + self.inputs_back
 
@@ -78,38 +79,21 @@ class Component:
         print("\tforward: {} in, {} out, data rate: {}".format(self.inputs, self.outputs, self.dr))
         print("\tbackward: {} in, {} out, data rate: {}".format(self.inputs_back, self.outputs_back, self.dr_back))
 
-    # load ML models into memory so that they can be used quickly for prediction
-    # return dict with loaded models
-    @staticmethod
-    def load_ml_models():
-        # TODO: make configurable via CLI or adjust manually
-        ml_path = 'parameters/ml/web3_small/'
-        ml_models = {
-            'linear': joblib.load(ml_path + 'LinearRegression.joblib'),
-            'boosting': joblib.load(ml_path + 'GradientBoostingRegressor.joblib')
-        }
-        print("Successfully loaded ML models: {}".format(ml_models.keys()))
-        return ml_models
-
     # predict cpu requirement using ML
-    # TODO: make configurable or adjust manually for each model
-    def predict_cpu_req(self, model, total_dr):
+    def predict_cpu_req(self, total_dr):
         # sources don't require cpu
         if self.source:
             return 0
 
-        if model == 'fixed':
+        if self.ml_model_name == 'fixed':
             requirement = 0.8
-        elif model == 'true':
+        elif self.ml_model_name == 'true':
             # true requirement of synth data
-            # WARNING: only for this specific synthetic data function that I configured
+            # WARNING: only for this specific synthetic data function that I configured for my evaluation
             requirement = (1.0/100.0) * (2**total_dr - 1)
-        elif model == 'linear':
-            requirement = self.ml_models['linear'].predict([[total_dr]]).item()
-        elif model == 'boosting':
-            requirement = self.ml_models['boosting'].predict([[total_dr]]).item()
         else:
-            raise ValueError("Model {} does not match the available prediction models".format(model))
+            # use proper sklearn ML model for prediction
+            requirement = self.ml_model.predict([[total_dr]]).item()
         # print("CPU prediction for data rate {}: {} (will be >=0)".format(total_dr, requirement))
 
         # avoid negative predicted CPU (may happen, eg, for linear regression)
@@ -131,8 +115,8 @@ class Component:
             total_dr += incoming[i]
 
         # predict requirements using ML if enabled
-        if use_ml:
-            requirement = self.predict_cpu_req('boosting', total_dr)
+        if self.ml_model_name is not None or self.ml_model is not None:
+            requirement = self.predict_cpu_req(total_dr)
 
         return requirement
 
@@ -144,7 +128,7 @@ class Component:
             raise ValueError("Mismatch of #incoming data rates and inputs")
 
         # disable for ML for now
-        if use_ml:
+        if self.ml_model is not None or self.ml_model_name is not None:
             return 0
 
         requirement = self.mem[-1]  # idle consumption
