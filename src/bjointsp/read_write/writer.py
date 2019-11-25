@@ -193,6 +193,11 @@ def write_heuristic_result(runtime, obj_value, changed, overlays, input_files, o
         if sources is None:
             sources = []
         result["input"]["num_sources"] = len(sources)
+        # num flows
+        num_flows = 0
+        for src in sources:
+            num_flows += len(src["flows"])
+        result["input"]["num_flows"] = num_flows
 
     result = save_heuristic_variables(result, changed, instances, edges, nodes, links)
 

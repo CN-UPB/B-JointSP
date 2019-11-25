@@ -1,0 +1,11 @@
+- node: pop0
+  vnf: vnf_user
+  flows:
+    - id: f1
+      data_rate: 250
+    - id: f2
+      data_rate: 250
+    - id: f3
+      data_rate: 250
+    - id: f4
+      data_rate: 250

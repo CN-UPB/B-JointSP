@@ -13,7 +13,9 @@ setup(name='bjointsp',
         "networkx",
         "geopy",
         "pyyaml",
-        "numpy"
+        "numpy",
+        "scikit-learn==0.21.3",
+        "joblib"
     ],
     zip_safe=False,
     entry_points={

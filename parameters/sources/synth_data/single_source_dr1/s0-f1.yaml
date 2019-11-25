@@ -1,4 +1,4 @@
-- node: pop1
+- node: pop0
   vnf: vnf_user
   flows:
     - id: f1

@@ -1,5 +1,9 @@
+import joblib
+
+
 class Component:
-    def __init__(self, name, type, stateful, inputs, outputs, cpu, mem, dr, vnf_delay=0, config=None):
+    def __init__(self, name, type, stateful, inputs, outputs, cpu, mem, dr, vnf_delay=0, config=None,
+                 ml_model_path=None):
         self.name = name
         if type == "source":
             self.source = True
@@ -23,6 +27,15 @@ class Component:
         self.dr = dr[0]
         self.dr_back = dr[1]
         self.config = config		# config used by external apps/MANOs (describes image, ports, ...)
+
+        self.ml_model = None
+        if ml_model_path is not None:
+            # special cases for fixed or true resource requirements
+            if ml_model_path == 'fixed' or ml_model_path == 'true':
+                self.ml_model = ml_model_path
+            else:
+                self.ml_model = joblib.load(ml_model_path)
+            print("Successfully loaded model {} for VNF {}.".format(ml_model_path, name))
 
         total_inputs = self.inputs + self.inputs_back
 
@@ -69,6 +82,26 @@ class Component:
         print("\tforward: {} in, {} out, data rate: {}".format(self.inputs, self.outputs, self.dr))
         print("\tbackward: {} in, {} out, data rate: {}".format(self.inputs_back, self.outputs_back, self.dr_back))
 
+    # predict cpu requirement using ML
+    def predict_cpu_req(self, total_dr):
+        # sources don't require cpu
+        if self.source:
+            return 0
+
+        if self.ml_model == 'fixed':
+            requirement = 0.8
+        elif self.ml_model == 'true':
+            # true requirement of synth data
+            # WARNING: only for this specific synthetic data function that I configured for my evaluation
+            requirement = (1.0/100.0) * (2**total_dr - 1)
+        else:
+            # use proper sklearn ML model for prediction
+            requirement = self.ml_model.predict([[total_dr]]).item()
+        # print("CPU prediction for data rate {}: {} (will be >=0)".format(total_dr, requirement))
+
+        # avoid negative predicted CPU (may happen, eg, for linear regression)
+        return max(requirement, 0)
+
     # CPU requirement based on the incoming data rates and the specified function
     # ignore idle consumption if component specified in ignore_idle
     def cpu_req(self, incoming, ignore_idle=None):
@@ -76,11 +109,17 @@ class Component:
         if len(incoming) != inputs:
             raise ValueError("Mismatch of #incoming data rates and inputs")
 
+        total_dr = 0
         requirement = self.cpu[-1]      # idle consumption
         if self == ignore_idle:
             requirement = 0
         for i in range(inputs):
             requirement += self.cpu[i] * incoming[i]    # linear function
+            total_dr += incoming[i]
+
+        # predict requirements using ML if enabled
+        if self.ml_model is not None:
+            requirement = self.predict_cpu_req(total_dr)
 
         return requirement
 
@@ -90,6 +129,10 @@ class Component:
         inputs = self.inputs + self.inputs_back
         if len(incoming) != inputs:
             raise ValueError("Mismatch of #incoming data rates and inputs")
+
+        # disable for ML for now
+        if self.ml_model is not None:
+            return 0
 
         requirement = self.mem[-1]  # idle consumption
         if self == ignore_idle:

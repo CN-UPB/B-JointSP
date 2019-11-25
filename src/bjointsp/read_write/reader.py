@@ -148,8 +148,9 @@ def read_template(file, return_src_components=False):
             inputs = (vnf["inputs_fwd"], vnf["inputs_bwd"])
             outputs = (vnf["outputs_fwd"], vnf["outputs_bwd"])
             outgoing = (vnf["out_fwd"], vnf["out_bwd"])
-            # Try to retrieve the image if it's in the template
+            # Optional fields: Image, ML model and model path
             vnf_image = vnf.get("image", None)
+            ml_path = vnf.get("ml_model_path", None)
             # Getting the VNF delay from YAML, checking to see if key exists, otherwise set default 0
             vnf_delay = vnf.get("vnf_delay", 0)
             # Check whether vnf is source and has cpu and mem requirements.
@@ -159,8 +160,8 @@ def read_template(file, return_src_components=False):
                             " Check the template file".format(vnf['name'], vnf['cpu'], vnf['mem']))
                 # print ("Source component {} has CPU:{} and MEM:{} requirements.
                 #         Check the template file".format(vnf['name'], vnf['cpu'], vnf['mem']))
-            component = Component(vnf["name"], vnf["type"], vnf["stateful"], inputs,
-                                  outputs, vnf["cpu"], vnf["mem"], outgoing, vnf_delay, config=vnf_image)
+            component = Component(vnf["name"], vnf["type"], vnf["stateful"], inputs, outputs, vnf["cpu"], vnf["mem"],
+                                  outgoing, vnf_delay, config=vnf_image, ml_model_path=ml_path)
             components.append(component)
 
         for arc in template["vlinks"]:
