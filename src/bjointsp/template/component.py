@@ -3,7 +3,7 @@ import joblib
 
 class Component:
     def __init__(self, name, type, stateful, inputs, outputs, cpu, mem, dr, vnf_delay=0, config=None,
-                 ml_model_path=None):
+                 ml_model_path=None, ml_scaler_path=None):
         self.name = name
         if type == "source":
             self.source = True
@@ -28,6 +28,7 @@ class Component:
         self.dr_back = dr[1]
         self.config = config		# config used by external apps/MANOs (describes image, ports, ...)
 
+        # load ML models and scaler if specified
         self.ml_model = None
         if ml_model_path is not None:
             # special cases for fixed or true resource requirements
@@ -36,6 +37,10 @@ class Component:
             else:
                 self.ml_model = joblib.load(ml_model_path)
             print("Successfully loaded model {} for VNF {}.".format(ml_model_path, name))
+        self.ml_scaler = None
+        if ml_scaler_path is not None:
+            self.ml_scaler = joblib.load(ml_scaler_path)
+            print("Successfully loaded scaler {} for VNF {}.".format(ml_scaler_path, name))
 
         total_inputs = self.inputs + self.inputs_back
 
@@ -95,7 +100,9 @@ class Component:
             # WARNING: only for this specific synthetic data function that I configured for my evaluation
             requirement = (1.0/100.0) * (2**total_dr - 1)
         else:
-            # use proper sklearn ML model for prediction
+            # use proper sklearn ML model for prediction; if specified scale data rate first
+            if self.ml_scaler:
+                total_dr = self.ml_scaler.transform([[total_dr]]).item()
             requirement = self.ml_model.predict([[total_dr]]).item()
         # print("CPU prediction for data rate {}: {} (will be >=0)".format(total_dr, requirement))
 

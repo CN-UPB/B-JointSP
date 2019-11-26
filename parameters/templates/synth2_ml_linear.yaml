@@ -1,4 +1,4 @@
-# example chain template: User -> LB (HAProxy) -> Cache (Squid) -> Web (Nginx)
+# example chain template: User -> Cache (Squid) -> Web (Nginx)
 # all VNFs use ML models to predict their CPU requirements
 name: web_ml
 vnfs:
@@ -9,8 +9,8 @@ vnfs:
     inputs_bwd: 0
     outputs_fwd: 1
     outputs_bwd: 0
-    cpu: [1]
-    mem: [1]
+    cpu: [0]
+    mem: [0]
     vnf_delay: 0
     out_fwd: []
     out_bwd: []
@@ -24,7 +24,8 @@ vnfs:
     # new optional field, specifying the ML model for predicting resource requirements
     # replaces the cpu and mem coefficients specified below (still required)
     # path specified relative to from where bjointsp is executed
-    ml_model_path: "parameters/ml/haproxy/LinearRegression.joblib"
+    ml_model_path: "parameters/ml/synth_data/LinearRegression.joblib"
+    ml_scaler_path: "parameters/ml/synth_data/scaler.joblib"
     cpu: [1,0]
     mem: [1,0]
     vnf_delay: 10
@@ -38,7 +39,8 @@ vnfs:
     inputs_bwd: 0
     outputs_fwd: 0
     outputs_bwd: 0
-    ml_model_path: "parameters/ml/nginx/LinearRegression.joblib"
+    ml_model_path: "parameters/ml/synth_data/LinearRegression.joblib"
+    ml_scaler_path: "parameters/ml/synth_data/scaler.joblib"
     cpu: [1,0]
     mem: [1,0]
     vnf_delay: 10

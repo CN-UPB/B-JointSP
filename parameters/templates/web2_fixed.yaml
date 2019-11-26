@@ -1,6 +1,6 @@
-# example chain template: User -> LB (HAProxy) -> Web (Nginx)
-# all VNFs have a fixed resource consumption of 0.8 CPU
-name: web_fixed
+# example chain template: User -> Cache (Squid) -> Web (Nginx)
+# all VNFs use ML models to predict their CPU requirements
+name: web_ml
 vnfs:
   - name: vnf_user
     type: source
@@ -9,8 +9,8 @@ vnfs:
     inputs_bwd: 0
     outputs_fwd: 1
     outputs_bwd: 0
-    cpu: [1]
-    mem: [1]
+    cpu: [0]
+    mem: [0]
     vnf_delay: 0
     out_fwd: []
     out_bwd: []
@@ -23,8 +23,8 @@ vnfs:
     outputs_bwd: 0
     # new optional field, specifying the ML model for predicting resource requirements
     # replaces the cpu and mem coefficients specified below (still required)
-    # instead of path, "fixed" or "true" can be used
-    ml_model_path: fixed
+    # path specified relative to from where bjointsp is executed
+    ml_model_path: "fixed"
     cpu: [1,0]
     mem: [1,0]
     vnf_delay: 10
@@ -38,7 +38,7 @@ vnfs:
     inputs_bwd: 0
     outputs_fwd: 0
     outputs_bwd: 0
-    ml_model_path: fixed
+    ml_model_path: "fixed"
     cpu: [1,0]
     mem: [1,0]
     vnf_delay: 10
@@ -57,4 +57,3 @@ vlinks:
     dest: vnf_web
     dest_input: 0
     max_delay: 50
-
