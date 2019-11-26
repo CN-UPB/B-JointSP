@@ -24,8 +24,7 @@ vnfs:
     # new optional field, specifying the ML model for predicting resource requirements
     # replaces the cpu and mem coefficients specified below (still required)
     # path specified relative to from where bjointsp is executed
-    ml_model_path: "parameters/ml/synth_data/SVR.joblib"
-    ml_scaler_path: "parameters/ml/synth_data/scaler.joblib"
+    ml_model_path: "fixed"
     cpu: [1,0]
     mem: [1,0]
     vnf_delay: 10
@@ -39,8 +38,7 @@ vnfs:
     inputs_bwd: 0
     outputs_fwd: 0
     outputs_bwd: 0
-    ml_model_path: "parameters/ml/synth_data/SVR.joblib"
-    ml_scaler_path: "parameters/ml/synth_data/scaler.joblib"
+    ml_model_path: "fixed"
     cpu: [1,0]
     mem: [1,0]
     vnf_delay: 10
