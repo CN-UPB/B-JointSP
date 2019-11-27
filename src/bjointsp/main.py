@@ -20,7 +20,7 @@ obj = objective.COMBINED
 
 # solve with heuristic; interface to place-emu: triggers placement
 def place(network_file, template_file, source_file, fixed_file=None, prev_embedding_file=None, cpu=None, mem=None,
-          dr=None, networkx=None):
+          dr=None, networkx=None, write_result=True):
     seed = random.randint(0, 9999)
     seed_subfolder = False
     random.seed(seed)
@@ -64,8 +64,10 @@ def place(network_file, template_file, source_file, fixed_file=None, prev_embedd
     # TODO: make less verbose or only as verbose when asked for (eg, with -v argument)
     init_time, runtime, obj_value, changed, overlays = control.solve(nodes, links, templates, prev_embedding, sources,
                                                                      fixed, obj)
+    # If the write_result variable is True we receive the path to a result file
+    # If the write_result variable is False we a result dict.
     result = writer.write_heuristic_result(runtime, obj_value, changed, overlays.values(), input_files, obj, nodes,
-                                           links, seed, seed_subfolder)
+                                           links, seed, seed_subfolder, write_result)
 
     return result
 
