@@ -154,8 +154,10 @@ def save_heuristic_variables(result, changed_instances, instances, edges, nodes,
     return result
 
 
-def write_heuristic_result(runtime, obj_value, changed, overlays, input_files, obj, nodes, links, seed, seed_subfolder):
-    result_file = create_result_file(input_files[0:4], "bjointsp", seed=seed, seed_subfolder=seed_subfolder, obj=obj)
+def write_heuristic_result(runtime, obj_value, changed, overlays, input_files, obj, nodes, links, seed, seed_subfolder,
+                           write_result):
+    if write_result:
+        result_file = create_result_file(input_files[0:4], "bjointsp", seed=seed, seed_subfolder=seed_subfolder, obj=obj)
 
     instances, edges = set(), set()
     for ol in overlays:
@@ -196,8 +198,13 @@ def write_heuristic_result(runtime, obj_value, changed, overlays, input_files, o
 
     result = save_heuristic_variables(result, changed, instances, edges, nodes, links)
 
-    with open(result_file, "w", newline="") as outfile:
-        yaml.dump(result, outfile, default_flow_style=False)
-        print("Writing solution to {}".format(result_file))
+    # If the write_result variable is True we write to a file and return its path
+    # If the write_result variable is False we return the results dict
+    if write_result:
+        with open(result_file, "w", newline="") as outfile:
+            yaml.dump(result, outfile, default_flow_style=False)
+            print("Writing solution to {}".format(result_file))
 
-    return result_file
+        return result_file
+    else:
+        return result
