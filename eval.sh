@@ -68,9 +68,14 @@
 
 
 # runtime results
-for i in {1..10}
+for i in {1..30}
 do
   bjointsp -n parameters/networks/Abilene.graphml -t parameters/templates/web2_fixed.yaml -s parameters/sources/web_data/three_source_dr250/s0-f8.yaml
   bjointsp -n parameters/networks/Abilene.graphml -t parameters/templates/web2_linear.yaml -s parameters/sources/web_data/three_source_dr250/s0-f8.yaml
   bjointsp -n parameters/networks/Abilene.graphml -t parameters/templates/web2_ml.yaml -s parameters/sources/web_data/three_source_dr250/s0-f8.yaml
+  bjointsp -n parameters/networks/Abilene.graphml -t parameters/templates/web2_boosting.yaml -s parameters/sources/web_data/three_source_dr250/s0-f8.yaml
+  bjointsp -n parameters/networks/Abilene.graphml -t parameters/templates/web2_forest.yaml -s parameters/sources/web_data/three_source_dr250/s0-f8.yaml
+  bjointsp -n parameters/networks/Abilene.graphml -t parameters/templates/web2_svr.yaml -s parameters/sources/web_data/three_source_dr250/s0-f8.yaml
+  bjointsp -n parameters/networks/Abilene.graphml -t parameters/templates/web2_mlp.yaml -s parameters/sources/web_data/three_source_dr250/s0-f8.yaml
+  bjointsp -n parameters/networks/Abilene.graphml -t parameters/templates/web2_ridge.yaml -s parameters/sources/web_data/three_source_dr250/s0-f8.yaml
 done
