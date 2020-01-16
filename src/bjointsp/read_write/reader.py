@@ -249,6 +249,7 @@ def read_prev_placement(networkx, templates):
             # find component that matches the VNF name (in any of the templates)
             for t in templates:
                 # use first matching component (assuming it's only in one template)
+                # TODO: does this work as expected or do we need to pass vnf["name"] here too?
                 component = get_component(t, vnf)
                 if component is not None:
                     # add new instance to overlay of corresponding template (source components need src_flows being set)
@@ -278,7 +279,7 @@ def read_prev_embedding(file, templates, nodes, links):
             # find component that matches the VNF name (in any of the templates)
             for t in templates:
                 # use first matching component (assuming it's only in one template)
-                component = get_component(t, vnf)
+                component = get_component(t, vnf["name"])
                 if component is not None:
                     # add new instance to overlay of corresponding template (source components need src_flows being set)
                     if component.source:
