@@ -248,8 +248,7 @@ def read_prev_placement(networkx, templates):
         for vnf in node_attr['available_sf']:
             # find component that matches the VNF name (in any of the templates)
             for t in templates:
-                # use first matching component (assuming it's only in one template)
-                # TODO: does this work as expected or do we need to pass vnf["name"] here too?
+                # use first matching component (assuming it's only in one template); here, "vnf" is the vnf's name
                 component = get_component(t, vnf)
                 if component is not None:
                     # add new instance to overlay of corresponding template (source components need src_flows being set)

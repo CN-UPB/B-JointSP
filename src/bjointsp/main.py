@@ -61,7 +61,6 @@ def place(network_file, template_file, source_file, fixed_file=None, prev_embedd
 
     logger.info("Starting initial embedding at {}".format(timestamp))
     # print("Initial embedding\n")
-    # TODO: make less verbose or only as verbose when asked for (eg, with -v argument)
     init_time, runtime, obj_value, changed, overlays = control.solve(nodes, links, templates, prev_embedding, sources,
                                                                      fixed, obj)
     # If the write_result variable is True we receive the path to a result file
