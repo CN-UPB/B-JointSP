@@ -1,9 +1,8 @@
 import logging
+
 import networkx as nx
 import numpy as np
 import yaml
-
-from geopy.distance import vincenty
 from bjointsp.fixed.fixed_instance import FixedInstance
 from bjointsp.fixed.source import Source
 from bjointsp.heuristic import shortest_paths as sp
@@ -16,6 +15,7 @@ from bjointsp.overlay.overlay import Overlay
 from bjointsp.template.arc import Arc
 from bjointsp.template.component import Component
 from bjointsp.template.template import Template
+from geopy.distance import vincenty
 
 logger = logging.getLogger('bjointsp')
 
@@ -139,35 +139,39 @@ def read_network(file, cpu=None, mem=None, dr=None):
     return nodes, links
 
 
-# read template from yaml file
-def read_template(file, return_src_components=False):
+# read template from yaml file unless an object is provided
+def read_template(file, template_object=False, return_src_components=False):
     components, arcs = [], []
-    with open(file, "r") as template_file:
-        template = yaml.load(template_file, yaml.SafeLoader)
-        for vnf in template["vnfs"]:
-            inputs = (vnf["inputs_fwd"], vnf["inputs_bwd"])
-            outputs = (vnf["outputs_fwd"], vnf["outputs_bwd"])
-            outgoing = (vnf["out_fwd"], vnf["out_bwd"])
-            # Try to retrieve the image if it's in the template
-            vnf_image = vnf.get("image", None)
-            # Getting the VNF delay from YAML, checking to see if key exists, otherwise set default 0
-            vnf_delay = vnf.get("vnf_delay", 0)
-            # Check whether vnf is source and has cpu and mem requirements.
-            if (vnf["type"] == "source") and (
-                    (len(vnf["cpu"]) == 1 and (vnf["cpu"][0] > 0)) or (len(vnf["mem"]) == 1 and (vnf["mem"][0] > 0))):
-                logger.info("\tSource component {} has CPU:{} and MEM:{} requirements."
-                            " Check the template file".format(vnf['name'], vnf['cpu'], vnf['mem']))
-                # print ("Source component {} has CPU:{} and MEM:{} requirements.
-                #         Check the template file".format(vnf['name'], vnf['cpu'], vnf['mem']))
-            component = Component(vnf["name"], vnf["type"], vnf["stateful"], inputs,
-                                  outputs, vnf["cpu"], vnf["mem"], outgoing, vnf_delay, config=vnf_image)
-            components.append(component)
+    if template_object:
+        template = file
+    else:
+        with open(file, "r") as template_file:
+            template = yaml.load(template_file, yaml.SafeLoader)
 
-        for arc in template["vlinks"]:
-            source = list(filter(lambda x: x.name == arc["src"], components))[0]  # get component with specified name
-            dest = list(filter(lambda x: x.name == arc["dest"], components))[0]
-            arc = Arc(arc["direction"], source, arc["src_output"], dest, arc["dest_input"], arc["max_delay"])
-            arcs.append(arc)
+    for vnf in template["vnfs"]:
+        inputs = (vnf["inputs_fwd"], vnf["inputs_bwd"])
+        outputs = (vnf["outputs_fwd"], vnf["outputs_bwd"])
+        outgoing = (vnf["out_fwd"], vnf["out_bwd"])
+        # Try to retrieve the image if it's in the template
+        vnf_image = vnf.get("image", None)
+        # Getting the VNF delay from YAML, checking to see if key exists, otherwise set default 0
+        vnf_delay = vnf.get("vnf_delay", 0)
+        # Check whether vnf is source and has cpu and mem requirements.
+        if (vnf["type"] == "source") and (
+                (len(vnf["cpu"]) == 1 and (vnf["cpu"][0] > 0)) or (len(vnf["mem"]) == 1 and (vnf["mem"][0] > 0))):
+            logger.info("\tSource component {} has CPU:{} and MEM:{} requirements."
+                        " Check the template file".format(vnf['name'], vnf['cpu'], vnf['mem']))
+            # print ("Source component {} has CPU:{} and MEM:{} requirements.
+            #         Check the template file".format(vnf['name'], vnf['cpu'], vnf['mem']))
+        component = Component(vnf["name"], vnf["type"], vnf["stateful"], inputs,
+                              outputs, vnf["cpu"], vnf["mem"], outgoing, vnf_delay, config=vnf_image)
+        components.append(component)
+
+    for arc in template["vlinks"]:
+        source = list(filter(lambda x: x.name == arc["src"], components))[0]  # get component with specified name
+        dest = list(filter(lambda x: x.name == arc["dest"], components))[0]
+        arc = Arc(arc["direction"], source, arc["src_output"], dest, arc["dest_input"], arc["max_delay"])
+        arcs.append(arc)
 
     template = Template(template["name"], components, arcs)
     update_stateful(template)
@@ -179,31 +183,34 @@ def read_template(file, return_src_components=False):
     return template
 
 
-# read sources from yaml file
-def read_sources(file, source_components):
+# read sources from yaml file unless a source object is provided
+def read_sources(file, source_components, source_object=False):
     sources = []
-    with open(file, "r") as sources_file:
-        yaml_file = yaml.load(sources_file, yaml.Loader)
+    if source_object:
+        input_sources = file
+    else:
+        with open(file, "r") as sources_file:
+            input_sources = yaml.load(sources_file, yaml.Loader)
 
-        # special case: no sources
-        if yaml_file is None:
-            return sources
+            # special case: no sources
+            if input_sources is None:
+                return sources
 
-        for src in yaml_file:
-            # get the component with the specified name: first (and only) element with source name
-            try:
-                component = list(filter(lambda x: x.name == src["vnf"], source_components))[0]
-                if not component.source:
-                    raise ValueError("Component {} is not a source component (required).".format(component))
-            except IndexError:
-                raise ValueError("Component {} of source unknown (not used in any template).".format(src["vnf"]))
+    for src in input_sources:
+        # get the component with the specified name: first (and only) element with source name
+        try:
+            component = list(filter(lambda x: x.name == src["vnf"], source_components))[0]
+            if not component.source:
+                raise ValueError("Component {} is not a source component (required).".format(component))
+        except IndexError:
+            raise ValueError("Component {} of source unknown (not used in any template).".format(src["vnf"]))
 
-            # read flows
-            flows = []
-            for f in src["flows"]:
-                flows.append(Flow(f["id"], f["data_rate"]))  # explicit float cast necessary for dr?
+        # read flows
+        flows = []
+        for f in src["flows"]:
+            flows.append(Flow(f["id"], f["data_rate"]))  # explicit float cast necessary for dr?
 
-            sources.append(Source(src["node"], component, flows))
+        sources.append(Source(src["node"], component, flows))
     return sources
 
 
