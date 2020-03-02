@@ -213,7 +213,7 @@ def write_heuristic_result(runtime, obj_value, changed, overlays, input_files, o
 
     # If the write_result variable is True we write to a file and return its path
     # If the write_result variable is False we return the results dict
-    if write_result:
+    if write_result and not source_template_object:
         with open(result_file, "w", newline="") as outfile:
             yaml.dump(result, outfile, default_flow_style=False)
             print("Writing solution to {}".format(result_file))
