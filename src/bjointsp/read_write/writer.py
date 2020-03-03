@@ -13,6 +13,8 @@ def create_result_file(input_files, subfolder, seed=None, seed_subfolder=False, 
     file_name = ""
     # add basename of each input file to the output filename
     for f in input_files:
+        # When the place function receives source list and template dict instead of file paths, input_files for them
+        # would not be strings. In that case we skip added them to file_name
         if f is not None and isinstance(f, str):
             file_name += os.path.basename(f).split(".")[0] + "-"
     # put result in seed-subfolder

@@ -19,6 +19,9 @@ obj = objective.COMBINED
 
 
 # solve with heuristic; interface to place-emu: triggers placement
+# By Default we send the paths to the template_file as well as the source_file, but for being able to parallel run
+# multiple instances of BJointSP we want them to be objects. When sending source and template objects we also set
+# 'source_template_object' to True so that BJointSP is able to handle the difference
 def place(network_file, template_file, source_file, source_template_object=False, fixed_file=None,
           prev_embedding_file=None, cpu=None, mem=None, dr=None, networkx=None, write_result=True):
     seed = random.randint(0, 9999)
@@ -39,13 +42,11 @@ def place(network_file, template_file, source_file, source_template_object=False
     else:
         nodes, links = reader.read_network(network_file, cpu, mem, dr)
 
-    if source_template_object:
-        template, source_components = reader.read_template(template_file, template_object=True,
-                                                           return_src_components=True)
-        sources = reader.read_sources(source_file, source_components, source_object=True)
-    else:
-        template, source_components = reader.read_template(template_file, return_src_components=True)
-        sources = reader.read_sources(source_file, source_components)
+    # When 'source_template_object' is True, we would need to read from objects instead of files
+    template, source_components = reader.read_template(template_file, template_object=source_template_object,
+                                                       return_src_components=True)
+    sources = reader.read_sources(source_file, source_components, source_object=source_template_object)
+
     templates = [template]
     # print(template)
     # exit()
