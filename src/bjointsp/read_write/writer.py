@@ -13,7 +13,9 @@ def create_result_file(input_files, subfolder, seed=None, seed_subfolder=False, 
     file_name = ""
     # add basename of each input file to the output filename
     for f in input_files:
-        if f is not None:
+        # When the place function receives source list and template dict instead of file paths, input_files for them
+        # would not be strings. In that case we skip added them to file_name
+        if f is not None and isinstance(f, str):
             file_name += os.path.basename(f).split(".")[0] + "-"
     # put result in seed-subfolder
     if seed is not None and seed_subfolder:
@@ -155,7 +157,7 @@ def save_heuristic_variables(result, changed_instances, instances, edges, nodes,
 
 
 def write_heuristic_result(runtime, obj_value, changed, overlays, input_files, obj, nodes, links, seed, seed_subfolder,
-                           write_result):
+                           write_result, source_template_object):
     if write_result:
         result_file = create_result_file(input_files[0:4], "bjointsp", seed=seed, seed_subfolder=seed_subfolder, obj=obj)
 
@@ -164,11 +166,17 @@ def write_heuristic_result(runtime, obj_value, changed, overlays, input_files, o
         instances.update(ol.instances)
         edges.update(ol.edges)
 
+    if not source_template_object:
+        service = os.path.basename(input_files[1])
+        sources = os.path.basename(input_files[2])
+    else:
+        service = input_files[1]['name']
+        sources = 'source_object'
     # construct result as dictionary for writing into YAML result file
     result = {"time": datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
               "input": {"network": os.path.basename(input_files[0]),
-                        "service": os.path.basename(input_files[1]),
-                        "sources": os.path.basename(input_files[2]),
+                        "service": service,
+                        "sources": sources,
                         "fixed": "None",
                         "prev_embedding": "None",
                         "seed": seed,
@@ -187,20 +195,27 @@ def write_heuristic_result(runtime, obj_value, changed, overlays, input_files, o
     network = nx.read_graphml(input_files[0])
     result["input"]["num_nodes"] = network.number_of_nodes()
     result["input"]["num_edges"] = network.number_of_edges()
-    with open(input_files[1]) as f:
-        service = yaml.load(f, yaml.SafeLoader)
-        result["input"]["num_vnfs"] = len(service["vnfs"])
-    with open(input_files[2]) as f:
-        sources = yaml.load(f, yaml.Loader)
+    if source_template_object:
+        result["input"]["num_vnfs"] = len(input_files[1]["vnfs"])
+        sources = input_files[2]
         if sources is None:
             sources = []
         result["input"]["num_sources"] = len(sources)
+    else:
+        with open(input_files[1]) as f:
+            service = yaml.load(f, yaml.SafeLoader)
+            result["input"]["num_vnfs"] = len(service["vnfs"])
+        with open(input_files[2]) as f:
+            sources = yaml.load(f, yaml.Loader)
+            if sources is None:
+                sources = []
+            result["input"]["num_sources"] = len(sources)
 
     result = save_heuristic_variables(result, changed, instances, edges, nodes, links)
 
     # If the write_result variable is True we write to a file and return its path
     # If the write_result variable is False we return the results dict
-    if write_result:
+    if write_result and not source_template_object:
         with open(result_file, "w", newline="") as outfile:
             yaml.dump(result, outfile, default_flow_style=False)
             print("Writing solution to {}".format(result_file))

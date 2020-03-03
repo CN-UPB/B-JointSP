@@ -19,8 +19,11 @@ obj = objective.COMBINED
 
 
 # solve with heuristic; interface to place-emu: triggers placement
-def place(network_file, template_file, source_file, fixed_file=None, prev_embedding_file=None, cpu=None, mem=None,
-          dr=None, networkx=None, write_result=True):
+# By Default we send the paths to the template_file as well as the source_file, but for being able to parallel run
+# multiple instances of BJointSP we want them to be objects. When sending source and template objects we also set
+# 'source_template_object' to True so that BJointSP is able to handle the difference
+def place(network_file, template_file, source_file, source_template_object=False, fixed_file=None,
+          prev_embedding_file=None, cpu=None, mem=None, dr=None, networkx=None, write_result=True):
     seed = random.randint(0, 9999)
     seed_subfolder = False
     random.seed(seed)
@@ -39,11 +42,14 @@ def place(network_file, template_file, source_file, fixed_file=None, prev_embedd
     else:
         nodes, links = reader.read_network(network_file, cpu, mem, dr)
 
-    template, source_components = reader.read_template(template_file, return_src_components=True)
+    # When 'source_template_object' is True, we would need to read from objects instead of files
+    template, source_components = reader.read_template(template_file, template_object=source_template_object,
+                                                       return_src_components=True)
+    sources = reader.read_sources(source_file, source_components, source_object=source_template_object)
+
     templates = [template]
     # print(template)
     # exit()
-    sources = reader.read_sources(source_file, source_components)
     components = {j for t in templates for j in t.components}
     fixed = []
     if fixed_file is not None:
@@ -66,7 +72,7 @@ def place(network_file, template_file, source_file, fixed_file=None, prev_embedd
     # If the write_result variable is True we receive the path to a result file
     # If the write_result variable is False we a result dict.
     result = writer.write_heuristic_result(runtime, obj_value, changed, overlays.values(), input_files, obj, nodes,
-                                           links, seed, seed_subfolder, write_result)
+                                           links, seed, seed_subfolder, write_result, source_template_object)
 
     return result
 
