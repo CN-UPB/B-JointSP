@@ -187,7 +187,12 @@ def write_heuristic_result(runtime, obj_value, changed, overlays, input_files, o
 
     # set file of fixed instances and of previous embedding if they are specified
     if input_files[3] is not None:
-        result["input"]["fixed"] = os.path.basename(input_files[3])
+        # string path
+        if isinstance(input_files[3], str):
+            result["input"]["fixed"] = os.path.basename(input_files[3])
+        # list of dicts
+        else:
+            result["input"]["fixed"] = str(input_files[3])
     if input_files[4] is not None:
         result["input"]["prev_embedding"] = os.path.basename(input_files[4])
 

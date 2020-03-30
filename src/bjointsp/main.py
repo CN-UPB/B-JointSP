@@ -22,7 +22,8 @@ obj = objective.COMBINED
 # By Default we send the paths to the template_file as well as the source_file, but for being able to parallel run
 # multiple instances of BJointSP we want them to be objects. When sending source and template objects we also set
 # 'source_template_object' to True so that BJointSP is able to handle the difference
-def place(network_file, template_file, source_file, source_template_object=False, fixed_file=None,
+# fixed_vnfs may be a path to a file with fixed VNF instances or a list of dicts (containing the same info)
+def place(network_file, template_file, source_file, source_template_object=False, fixed_vnfs=None,
           prev_embedding_file=None, cpu=None, mem=None, dr=None, networkx=None, write_result=True):
     seed = random.randint(0, 9999)
     seed_subfolder = False
@@ -52,15 +53,15 @@ def place(network_file, template_file, source_file, source_template_object=False
     # exit()
     components = {j for t in templates for j in t.components}
     fixed = []
-    if fixed_file is not None:
-        fixed = reader.read_fixed_instances(fixed_file, components)
+    if fixed_vnfs is not None:
+        fixed = reader.read_fixed_instances(fixed_vnfs, components)
     prev_embedding = {}
     if networkx is not None:
         prev_embedding = reader.read_prev_placement(networkx, templates)
     elif prev_embedding_file is not None:
         prev_embedding = reader.read_prev_embedding(prev_embedding_file, templates, nodes, links)
 
-    input_files = [network_file, template_file, source_file, fixed_file, prev_embedding_file]
+    input_files = [network_file, template_file, source_file, fixed_vnfs, prev_embedding_file]
     # TODO: support >1 template
 
     # print("Using seed {}".format(seed))
@@ -94,7 +95,7 @@ def parse_args():
 
 def main():
     args = parse_args()
-    place(args.network, args.template, args.sources, fixed_file=args.fixed, prev_embedding_file=args.prev, cpu=10,
+    place(args.network, args.template, args.sources, fixed_vnfs=args.fixed, prev_embedding_file=args.prev, cpu=10,
           mem=10, dr=50)
 
 
