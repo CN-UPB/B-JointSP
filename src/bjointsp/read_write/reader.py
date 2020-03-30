@@ -214,21 +214,26 @@ def read_sources(file, source_components, source_object=False):
     return sources
 
 
-# read fixed instances from yaml file
-def read_fixed_instances(file, components):
+# read fixed instances from yaml file or list of dicts (fixed_vnfs may be either or)
+def read_fixed_instances(fixed_vnfs, components):
+    assert isinstance(fixed_vnfs, str) or isinstance(fixed_vnfs, list)
     fixed_instances = []
-    with open(file, "r") as stream:
-        fixed = yaml.load(stream)
-        for i in fixed:
-            # get the component with the specified name: first (and only) element with component name
-            try:
-                component = list(filter(lambda x: x.name == i["vnf"], components))[0]
-                if component.source:
-                    raise ValueError("Component {} is a source component (forbidden).".format(component))
-            except IndexError:
-                raise ValueError("Component {} of fixed instance unknown (not used in any template).".format(i["vnf"]))
+    if isinstance(fixed_vnfs, list):
+        fixed = fixed_vnfs
+    else:
+        with open(fixed_vnfs, "r") as stream:
+            fixed = yaml.load(stream)
 
-            fixed_instances.append(FixedInstance(i["node"], component))
+    for i in fixed:
+        # get the component with the specified name: first (and only) element with component name
+        try:
+            component = list(filter(lambda x: x.name == i["vnf"], components))[0]
+            if component.source:
+                raise ValueError("Component {} is a source component (forbidden).".format(component))
+        except IndexError:
+            raise ValueError("Component {} of fixed instance unknown (not used in any template).".format(i["vnf"]))
+
+        fixed_instances.append(FixedInstance(i["node"], component))
     return fixed_instances
 
 
