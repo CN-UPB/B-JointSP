@@ -14,6 +14,7 @@ If you use B-JointSP in your research, please cite our work:
 
 ### Changelog
 
+* March 2020: Allowed passing template, sources, fixed VNFs as objects directly (not just file paths)
 * Feb 2019: Added end-to-end delay as result metric (not just total delay)
 * Feb 2019: Added VNF delays to templates and to calculation of total delay
 

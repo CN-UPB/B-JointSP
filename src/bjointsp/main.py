@@ -23,8 +23,10 @@ obj = objective.COMBINED
 # multiple instances of BJointSP we want them to be objects. When sending source and template objects we also set
 # 'source_template_object' to True so that BJointSP is able to handle the difference
 # fixed_vnfs may be a path to a file with fixed VNF instances or a list of dicts (containing the same info)
+# optionally, networkx object can be passed directly and is used instead of the referenced network file
+# in that case, optionally specify a networkx_cap attribute string to retrieve the current node and link capacity
 def place(network_file, template_file, source_file, source_template_object=False, fixed_vnfs=None,
-          prev_embedding_file=None, cpu=None, mem=None, dr=None, networkx=None, write_result=True):
+          prev_embedding_file=None, cpu=None, mem=None, dr=None, networkx=None, networkx_cap='cap', write_result=True):
     seed = random.randint(0, 9999)
     seed_subfolder = False
     random.seed(seed)
@@ -39,7 +41,7 @@ def place(network_file, template_file, source_file, source_template_object=False
 
     # if a NetworkX object is passed, use that - including all of its capacities, delays, etc
     if networkx is not None:
-        nodes, links = reader.read_networkx(networkx)
+        nodes, links = reader.read_networkx(networkx, cap=networkx_cap)
     else:
         nodes, links = reader.read_network(network_file, cpu, mem, dr)
 

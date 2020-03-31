@@ -49,15 +49,16 @@ def update_stateful(template):
 
 # same as read_network but use an already existing, annotated NetworkX object
 # this is highly tailored to the NetworkX objects created by https://github.com/RealVNF/coordination-simulation
-def read_networkx(networkx):
+# cap is the attribute string for capacity
+def read_networkx(networkx, cap='cap'):
     # read nodes: use same cap for cpu and mem (no distinction in the simulator)
     node_ids = [v for v in networkx.nodes.keys()]
-    node_cpu = {v[0]: v[1]['cap'] for v in networkx.nodes.data()}
+    node_cpu = {v[0]: v[1][cap] for v in networkx.nodes.data()}
     nodes = Nodes(node_ids, node_cpu, node_cpu.copy())
 
     # read edges
     link_ids = [e for e in networkx.edges.keys()]
-    link_dr = {(e[0], e[1]): e[2]['cap'] for e in networkx.edges.data()}
+    link_dr = {(e[0], e[1]): e[2][cap] for e in networkx.edges.data()}
     link_delay = {(e[0], e[1]): e[2]['delay'] for e in networkx.edges.data()}
 
     # add reversed links for bidirectionality
