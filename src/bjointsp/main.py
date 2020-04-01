@@ -25,8 +25,10 @@ obj = objective.COMBINED
 # fixed_vnfs may be a path to a file with fixed VNF instances or a list of dicts (containing the same info)
 # optionally, networkx object can be passed directly and is used instead of the referenced network file
 # in that case, optionally specify a networkx_cap attribute string to retrieve the current node and link capacity
+# print_best = whether or not to print the best overlay found at the end
 def place(network_file, template_file, source_file, source_template_object=False, fixed_vnfs=None,
-          prev_embedding_file=None, cpu=None, mem=None, dr=None, networkx=None, networkx_cap='cap', write_result=True):
+          prev_embedding_file=None, cpu=None, mem=None, dr=None, networkx=None, networkx_cap='cap', write_result=True,
+          print_best=True):
     seed = random.randint(0, 9999)
     seed_subfolder = False
     random.seed(seed)
@@ -71,7 +73,7 @@ def place(network_file, template_file, source_file, source_template_object=False
     logger.info("Starting initial embedding at {}".format(timestamp))
     # print("Initial embedding\n")
     init_time, runtime, obj_value, changed, overlays = control.solve(nodes, links, templates, prev_embedding, sources,
-                                                                     fixed, obj)
+                                                                     fixed, obj, print_best=print_best)
     # If the write_result variable is True we receive the path to a result file
     # If the write_result variable is False we a result dict.
     result = writer.write_heuristic_result(runtime, obj_value, changed, overlays.values(), input_files, obj, nodes,
