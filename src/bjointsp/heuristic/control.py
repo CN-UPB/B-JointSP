@@ -140,7 +140,7 @@ def total_source_drs(sources):
     return src_drs
 
 
-def solve(arg_nodes, arg_links, templates, prev_overlays, sources, fixed, arg_obj):
+def solve(arg_nodes, arg_links, templates, prev_overlays, sources, fixed, arg_obj, print_best=True):
     # write global variables
     global nodes, links, prev_instances, obj
     nodes = arg_nodes
@@ -187,7 +187,8 @@ def solve(arg_nodes, arg_links, templates, prev_overlays, sources, fixed, arg_ob
     if len(nodes.ids) > 1:		# doesn't work for networks with just 1 node
         # print("\n----- Iterative improvement -----")
         logger.info("----- Iterative improvement -----")
-        overlays = improvement.improve(arg_nodes, arg_links, templates, overlays, sources, fixed, shortest_paths)
+        overlays = improvement.improve(arg_nodes, arg_links, templates, overlays, sources, fixed, shortest_paths,
+                                       print_best=print_best)
         obj_value = objective_value(overlays)
         runtime = time.time() - start_heuristic
         # print("Objective value after improvement: {}".format(obj_value))

@@ -1,10 +1,12 @@
 import os
 import networkx as nx
 import yaml
-
+import logging
 from collections import defaultdict
 from datetime import datetime
 from bjointsp.heuristic import shortest_paths as sp
+
+logger = logging.getLogger('bjointsp')
 
 
 # prepare result-file based on scenario-file: in results-subdirectory, using scenario name + timestamp (+ seed + event)
@@ -223,7 +225,7 @@ def write_heuristic_result(runtime, obj_value, changed, overlays, input_files, o
     if write_result and not source_template_object:
         with open(result_file, "w", newline="") as outfile:
             yaml.dump(result, outfile, default_flow_style=False)
-            print("Writing solution to {}".format(result_file))
+            logger.info("Writing solution to {}".format(result_file))
 
         return result_file
     else:

@@ -35,7 +35,7 @@ def reset_overlay(template, instance, overlays_to_modify):
 
 
 # iteratively improve the specified overlays
-def improve(arg_nodes, arg_links, templates, arg_overlays, sources, fixed, arg_shortest_paths):
+def improve(arg_nodes, arg_links, templates, arg_overlays, sources, fixed, arg_shortest_paths, print_best=True):
     # write global variables
     global nodes, links, shortest_paths, overlays
     nodes = arg_nodes
@@ -123,8 +123,9 @@ def improve(arg_nodes, arg_links, templates, arg_overlays, sources, fixed, arg_s
     # print("Total outer loop iterations: {}".format(total_outer_iterations))
     logger.info("---Heuristic finished---")
     logger.info("Total outer loop iterations: {}".format(total_outer_iterations))
-    print("Best overlays:")
-    for ol in best_overlays.values():
-        ol.print()
+    if print_best:
+        print("Best overlays:")
+        for ol in best_overlays.values():
+            ol.print()
 
     return best_overlays

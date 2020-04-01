@@ -1,3 +1,8 @@
+import logging
+
+logger = logging.getLogger('bjointsp')
+
+
 class Template:
     def __init__(self, name, components, arcs):
         self.name = name
@@ -132,7 +137,7 @@ class Template:
                     out_dr[(j, "backward", k_out)] = out_drs[k_out]
 
         total_dr = sum(out_dr.values())
-        print("{}'s weight: {}\n".format(self, total_cpu+total_mem+total_dr))
+        logger.info("{}'s weight: {}\n".format(self, total_cpu+total_mem+total_dr))
         
         return total_cpu + total_mem + total_dr
 
