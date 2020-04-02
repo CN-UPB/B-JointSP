@@ -189,6 +189,10 @@ def solve(arg_nodes, arg_links, templates, prev_overlays, sources, fixed, arg_ob
         logger.info("----- Iterative improvement -----")
         overlays = improvement.improve(arg_nodes, arg_links, templates, overlays, sources, fixed, shortest_paths,
                                        print_best=print_best)
+        # None = failure to place. shouldn't happen (unless there's no way to find a placement)
+        if overlays is None:
+            runtime = time.time() - start_heuristic
+            return init_time, runtime, math.inf, None, None
         obj_value = objective_value(overlays)
         runtime = time.time() - start_heuristic
         # print("Objective value after improvement: {}".format(obj_value))

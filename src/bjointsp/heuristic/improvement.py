@@ -90,6 +90,9 @@ def improve(arg_nodes, arg_links, templates, arg_overlays, sources, fixed, arg_s
             reset_overlay(ol.template, rand_instance, modified_overlays)
             modified_overlays = heuristic.solve(nodes, links, templates, modified_overlays, sources, fixed,
                                                 shortest_paths, tabu)
+            # return failed placement back to controller. to fail in "save" way
+            if modified_overlays is None:
+                return None
 
             # update solution
             new_obj_value = control.objective_value(modified_overlays)
