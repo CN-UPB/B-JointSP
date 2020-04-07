@@ -170,6 +170,10 @@ def find_best_node(overlay, start_location, arc, delta_dr, fixed, tabu):
         # if fixed, only allow nodes of fixed instances => enforce reuse
         if fixed:
             allowed_nodes = fixed_nodes
+        if len(allowed_nodes) == 0:
+            logger.error(f"There are no allowed nodes reachable from {start_location}. "
+                         f"Cannot find suitable node for placement. Stopping...")
+            return None
         for v in allowed_nodes:
             # looking at sum of cpu and memory over-subscription to find nodes with little over-sub of both
             over_subscription = (consumed_cpu[v] - nodes.cpu[v]) + (consumed_mem[v] - nodes.mem[v])
@@ -184,6 +188,7 @@ def find_best_node(overlay, start_location, arc, delta_dr, fixed, tabu):
 
 
 # map the specified flow (with specified flow_dr) to a possibly new edge from the start_instance
+# return whether or not successful (only fails if no placement can be computed at all)
 def map_flow2edge(overlay, start_instance, arc, flow, flow_dr, tabu):
     # determine if the instances of the destination component are fixed => if so, cannot place new instances
     fixed = False
@@ -192,6 +197,9 @@ def map_flow2edge(overlay, start_instance, arc, flow, flow_dr, tabu):
             fixed = True
             break
     best_node = find_best_node(overlay, start_instance.location, arc, flow_dr, fixed, tabu)
+    if best_node is None:
+        logger.error(f"No suitable node found. Cannot compute placement.")
+        return False
 
     # if the instance at best node already exists (e.g., from forward dir), just connect to it, else create anew
     # look for existing instance
@@ -228,6 +236,7 @@ def map_flow2edge(overlay, start_instance, arc, flow, flow_dr, tabu):
     edge.flows.append(flow)
     # print("\tMapped flow {} (dr {}) to edge {} (new: {})".format(flow, flow_dr, edge, not edge_exists))
     logger.info("\tMapped flow {} (dr {}) to edge {} (new: {})".format(flow, flow_dr, edge, not edge_exists))
+    return True
 
 
 # map out_flows to edges back to the same stateful instances that were passed in fwd direction
@@ -258,6 +267,7 @@ def map_flows2stateful(overlay, start_instance, arc, out_flows):
 
 
 # update the mapping of flows leaving the start_instances along the specified edge
+# return iff successful (only fails if no placement possible at all)
 def update_flow_mapping(overlay, start_instance, arc, out_flows, tabu):
     flow_mapping = {f: e for e in start_instance.edges_out.values() if e.arc == arc for f in e.flows}
 
@@ -286,9 +296,11 @@ def update_flow_mapping(overlay, start_instance, arc, out_flows, tabu):
                 # FUTURE WORK: maybe check if capacitiy violated => if yes, reassign flow to different edge;
                 #              but might also be fixed during iterative improvement
             else:
-                map_flow2edge(overlay, start_instance, arc, f, out_flows[f], tabu)
+                success = map_flow2edge(overlay, start_instance, arc, f, out_flows[f], tabu)
                 # FUTURE WORK: maybe try to minimize number of edges or number of new edges by combining flows to
                 #              one edge or preferring existing edges (opj 2)
+                if not success:
+                    return False
 
     # remove empty edges
     for e in start_instance.edges_out.values():
@@ -296,6 +308,8 @@ def update_flow_mapping(overlay, start_instance, arc, out_flows, tabu):
             # print("\nRemoved empty edge {}".format(e))
             logger.info("\nRemoved empty edge {}".format(e))
             remove_edge(e, overlay)
+
+    return True
 
 
 # update sources (add, rem), update source flows, reset passed_stateful of all flows
@@ -439,7 +453,10 @@ def solve(arg_nodes, arg_links, templates, prev_overlays, sources, fixed, arg_sh
                                  "The output is skipped".format(instance, k, direction))
                     continue
 
-                update_flow_mapping(overlays[t], instance, arc, out_flows[k], tabu)
+                success = update_flow_mapping(overlays[t], instance, arc, out_flows[k], tabu)
+                if not success:
+                    logger.error(f"Failed to update flow mapping for arc {arc}. Stopping...")
+                    return None
                 # print("Updated the flow mapping along arc {} at {}\n".format(arc, instance))
                 logger.info("Updated the flow mapping along arc {} at {}\n".format(arc, instance))
 

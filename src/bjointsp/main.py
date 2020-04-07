@@ -74,6 +74,9 @@ def place(network_file, template_file, source_file, source_template_object=False
     # print("Initial embedding\n")
     init_time, runtime, obj_value, changed, overlays = control.solve(nodes, links, templates, prev_embedding, sources,
                                                                      fixed, obj, print_best=print_best)
+    if overlays is None:
+        logger.error("Could not find placement. Returning None.")
+        return None
     # If the write_result variable is True we receive the path to a result file
     # If the write_result variable is False we a result dict.
     result = writer.write_heuristic_result(runtime, obj_value, changed, overlays.values(), input_files, obj, nodes,

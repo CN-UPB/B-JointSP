@@ -1,4 +1,7 @@
 import math
+import logging
+
+logger = logging.getLogger('bjointsp')
 
 
 # return the delay of the specified path (= list of nodes)
@@ -8,7 +11,11 @@ def path_delay(links, path):
     for i in range(len(path) - 1):
         # skip connections on same node without a link (both inst at same node)
         if path[i] != path[i + 1]:
-            delay += links.delay[(path[i], path[i+1])]
+            if (path[i], path[i+1]) in links.delay:
+                delay += links.delay[(path[i], path[i+1])]
+            else:
+                logger.warning(f'No link {(path[i], path[i+1])}. Setting infinite delay.')
+                return math.inf
     return delay
 
 
