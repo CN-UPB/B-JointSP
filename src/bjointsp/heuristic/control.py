@@ -177,6 +177,9 @@ def solve(arg_nodes, arg_links, templates, prev_overlays, sources, fixed, arg_ob
     # print("\n----- Initial solution -----")
     logger.info("----- Initial solution -----")
     overlays = heuristic.solve(arg_nodes, arg_links, templates, prev_overlays, sources, fixed, shortest_paths)
+    if overlays is None:
+        runtime = time.time() - start_heuristic
+        return init_time, runtime, math.inf, None, None
     obj_value = objective_value(overlays)
     # print("Objective value of initial solution: {}".format(obj_value))
     # print("Runtime for initial solution: {}".format(time.time() - start_heuristic))
