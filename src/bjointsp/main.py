@@ -36,7 +36,9 @@ def place(network_file, template_file, source_file, source_template_object=False
 
     # set up logging into file Data/logs/heuristic/scenario_timestamp_seed.log
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    if logging_level is not None:
+    if logging_level is None:
+        logging.disable(logging.CRITICAL)
+    else:
         os.makedirs("logs/heuristic/obj{}".format(obj), exist_ok=True)
         logging.basicConfig(filename="logs/heuristic/obj{}/{}_{}_{}.log"
                             .format(obj, os.path.basename(network_file)[:-4], timestamp, seed),
