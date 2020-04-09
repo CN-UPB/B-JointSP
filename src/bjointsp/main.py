@@ -26,20 +26,23 @@ obj = objective.COMBINED
 # optionally, networkx object can be passed directly and is used instead of the referenced network file
 # in that case, optionally specify a networkx_cap attribute string to retrieve the current node and link capacity
 # print_best = whether or not to print the best overlay found at the end
+# logging level can be configured or completely disabled by setting to None
 def place(network_file, template_file, source_file, source_template_object=False, fixed_vnfs=None,
           prev_embedding_file=None, cpu=None, mem=None, dr=None, networkx=None, networkx_cap='cap', write_result=True,
-          print_best=True):
+          print_best=True, logging_level=logging.INFO):
     seed = random.randint(0, 9999)
     seed_subfolder = False
     random.seed(seed)
 
     # set up logging into file Data/logs/heuristic/scenario_timestamp_seed.log
-    # logging.disable(logging.CRITICAL)     # disable logging
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    os.makedirs("logs/heuristic/obj{}".format(obj), exist_ok=True)
-    logging.basicConfig(filename="logs/heuristic/obj{}/{}_{}_{}.log".format(obj, os.path.basename(network_file)[:-4],
-                                                                            timestamp, seed),
-                        level=logging.DEBUG, format="%(asctime)s(%(levelname)s):\t%(message)s", datefmt="%H:%M:%S")
+    if logging_level is None:
+        logging.disable(logging.CRITICAL)
+    else:
+        os.makedirs("logs/heuristic/obj{}".format(obj), exist_ok=True)
+        logging.basicConfig(filename="logs/heuristic/obj{}/{}_{}_{}.log"
+                            .format(obj, os.path.basename(network_file)[:-4], timestamp, seed),
+                            level=logging_level, format="%(asctime)s(%(levelname)s):\t%(message)s", datefmt="%H:%M:%S")
 
     # if a NetworkX object is passed, use that - including all of its capacities, delays, etc
     if networkx is not None:
