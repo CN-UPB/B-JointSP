@@ -15,7 +15,7 @@ from bjointsp.overlay.overlay import Overlay
 from bjointsp.template.arc import Arc
 from bjointsp.template.component import Component
 from bjointsp.template.template import Template
-from geopy.distance import vincenty
+from geopy.distance import geodesic
 
 logger = logging.getLogger('bjointsp')
 
@@ -122,7 +122,7 @@ def read_network(file, cpu=None, mem=None, dr=None):
             n2 = network.nodes(data=True)[e[1]]
             n1_lat, n1_long = n1.get("Latitude"), n1.get("Longitude")
             n2_lat, n2_long = n2.get("Latitude"), n2.get("Longitude")
-            distance = vincenty((n1_lat, n1_long), (n2_lat, n2_long)).meters  # in meters
+            distance = geodesic((n1_lat, n1_long), (n2_lat, n2_long)).meters  # in meters
             delay = (distance / SPEED_OF_LIGHT * 1000) * PROPAGATION_FACTOR  # in milliseconds
         # round delay to int using np.around for consistency with emulator
         link_delay[("pop{}".format(e[0]), "pop{}".format(e[1]))] = int(np.around(delay))
